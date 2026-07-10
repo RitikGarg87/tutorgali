@@ -1,0 +1,321 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Tutor Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .verified-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .badge-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    .get-badge-btn {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 30px;
+        border: none;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .get-badge-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(245, 87, 108, 0.6);
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%);
+        color: #333;
+    }
+    
+    .status-rejected {
+        background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 2rem auto; padding: 0 1rem;">
+    
+    <!-- Welcome Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem;">
+            <i class="fas fa-graduation-cap"></i> Welcome, {{ profile.full_name }}!
+        </h1>
+        <p style="margin: 0; opacity: 0.9;">Manage your tutoring profile and schedule</p>
+    </div>
+    
+    {% if messages %}
+    <div style="margin-bottom: 2rem;">
+        {% for message in messages %}
+        <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; {% if message.tags == 'success' %}background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #065f46;{% elif message.tags == 'error' %}background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #991b1b;{% else %}background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #1e40af;{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Badge Status Section -->
+    <div class="badge-container {% if profile.verification_status == 'pending' %}status-pending{% elif profile.verification_status == 'rejected' %}status-rejected{% endif %}">
+        {% if profile.verification_status == 'approved' %}
+            <!-- VERIFIED TUTOR -->
+            <div class="badge-icon">
+                <i class="fas fa-award"></i>
+            </div>
+            <h2 style="margin-bottom: 1rem;">🎉 Congratulations! 🎉</h2>
+            <div class="verified-badge">
+                <i class="fas fa-check-circle"></i> VERIFIED TUTOR
+            </div>
+            <p style="margin-top: 1rem; font-size: 1.1rem;">
+                You are now a verified tutor on TutorGali!
+            </p>
+        
+        {% elif profile.verification_status == 'pending' and profile.education_certificate and profile.id_proof %}
+            <!-- DOCUMENTS SUBMITTED - UNDER REVIEW -->
+            <div class="badge-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h2>Verification Under Review</h2>
+            <p style="margin-top: 1rem; font-size: 1.1rem;">
+                Your documents are being reviewed by our admin team.
+                <br>You'll receive your badge soon!
+            </p>
+            <a href="{% url 'verification' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-eye"></i> View Submission Status
+            </a>
+        
+        {% elif profile.verification_status == 'rejected' %}
+            <!-- REJECTED - RESUBMIT -->
+            <div class="badge-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2>Verification Rejected</h2>
+            {% if profile.verification_notes %}
+            <p style="margin-top: 1rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 5px;">
+                <strong>Reason:</strong> {{ profile.verification_notes }}
+            </p>
+            {% endif %}
+            <a href="{% url 'verification' %}" class="get-badge-btn" style="margin-top: 1rem;">
+                <i class="fas fa-redo"></i> Resubmit Documents
+            </a>
+        
+        {% else %}
+            <!-- NO DOCUMENTS SUBMITTED YET - GET BADGE -->
+            <div class="badge-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2>Get Your Tutor Badge!</h2>
+            <p style="margin-top: 1rem; font-size: 1.1rem;">
+                Become a verified tutor and gain student trust.
+                <br>Upload your documents to get verified!
+            </p>
+            <a href="{% url 'verification' %}" class="get-badge-btn" style="margin-top: 1rem;">
+                <i class="fas fa-upload"></i> Upload Documents to Get Verified
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Student Requests shortcut (improved) -->
+    <div style="background: white; padding: 1.5rem 1.75rem; border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <h2 style="margin:0; font-size:1.3rem; color:#111827;">
+                <i class="fas fa-user-graduate" style="color:#2563eb; margin-right:0.4rem;"></i>
+                View Student Requests
+            </h2>
+            <a href="{% url 'tutor_booking_requests' %}"
+               style="padding:0.5rem 1.2rem; background:#2563eb; color:#fff; border-radius:999px;
+                      font-size:0.9rem; font-weight:600; text-decoration:none;
+                      box-shadow:0 2px 6px rgba(37,99,235,0.35);">
+                Open List
+            </a>
+        </div>
+        <p style="margin:0; color:#6b7280; font-size:0.9rem;">
+            Check which students have requested you, along with their subjects, grades, and preferred time slots.
+        </p>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #3b82f6;">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: #6b7280;">Profile Status</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1f2937;">
+                        {% if profile.profile_completed %}Complete{% else %}Incomplete{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #10b981;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #10b981;">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: #6b7280;">Grades Teaching</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1f2937;">{{ grade_rates.count }}</div>
+                </div>
+            </div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #f97316;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; background: rgba(249, 115, 22, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #f97316;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: #6b7280;">Availability</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1f2937;">{{ hours_per_week }} hrs</div>
+                </div>
+            </div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; background: rgba(139, 92, 246, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #8b5cf6;">
+                    <i class="fas fa-award"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: #6b7280;">Experience</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1f2937;">{{ profile.experience_years }} yrs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; color: var(--primary-color);"><i class="fas fa-bolt"></i> Quick Actions</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <a href="{% url 'tutor_edit_profile' %}" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: transform 0.3s;">
+                <i class="fas fa-user-edit"></i> Edit Profile
+            </a>
+            <a href="{% url 'tutor_availability' %}" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: transform 0.3s;">
+                <i class="fas fa-calendar-alt"></i> Set Availability
+            </a>
+            <a href="{% url 'verification' %}" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: transform 0.3s;">
+                <i class="fas fa-id-card"></i> Get Verified
+            </a>
+        </div>
+    </div>
+    
+    <!-- Weekly Schedule -->
+    {% if availability and availability.time_slots %}
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0; color: var(--primary-color);"><i class="fas fa-calendar-week"></i> Your Weekly Schedule</h2>
+            <a href="{% url 'tutor_availability' %}" style="padding: 0.5rem 1rem; background: var(--primary-color); color: white; border-radius: 6px; text-decoration: none; font-weight: 600;"><i class="fas fa-edit"></i> Update</a>
+        </div>
+        
+        <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+            <div style="margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-color); font-size: 1.1rem;">
+                    <i class="fas fa-briefcase"></i> Monday to Saturday
+                </h3>
+                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Same schedule applies to all weekdays</p>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                {% for slot in availability.time_slots %}
+                <span style="padding: 0.5rem 1rem; background: var(--primary-color); color: white; border-radius: 6px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    {% if slot == '04:00-05:00' %}04:00 AM - 05:00 AM
+                    {% elif slot == '05:00-06:00' %}05:00 AM - 06:00 AM
+                    {% elif slot == '06:00-07:00' %}06:00 AM - 07:00 AM
+                    {% elif slot == '07:00-08:00' %}07:00 AM - 08:00 AM
+                    {% elif slot == '08:00-09:00' %}08:00 AM - 09:00 AM
+                    {% elif slot == '09:00-10:00' %}09:00 AM - 10:00 AM
+                    {% elif slot == '10:00-11:00' %}10:00 AM - 11:00 AM
+                    {% elif slot == '11:00-12:00' %}11:00 AM - 12:00 PM
+                    {% elif slot == '12:00-13:00' %}12:00 PM - 01:00 PM
+                    {% elif slot == '13:00-14:00' %}01:00 PM - 02:00 PM
+                    {% elif slot == '14:00-15:00' %}02:00 PM - 03:00 PM
+                    {% elif slot == '15:00-16:00' %}03:00 PM - 04:00 PM
+                    {% elif slot == '16:00-17:00' %}04:00 PM - 05:00 PM
+                    {% elif slot == '17:00-18:00' %}05:00 PM - 06:00 PM
+                    {% elif slot == '18:00-19:00' %}06:00 PM - 07:00 PM
+                    {% elif slot == '19:00-20:00' %}07:00 PM - 08:00 PM
+                    {% elif slot == '20:00-21:00' %}08:00 PM - 09:00 PM
+                    {% else %}{{ slot }}
+                    {% endif %}
+                </span>
+                {% endfor %}
+            </div>
+            
+            <div style="margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 6px;">
+                <p style="margin: 0; color: #6b7280; font-size: 0.85rem;">
+                    <i class="fas fa-info-circle"></i> <strong>Note:</strong> Sunday is off by default
+                </p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; margin-bottom: 2rem;">
+        <i class="fas fa-calendar-times" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+        <h3 style="color: #6b7280; margin-bottom: 0.5rem;">No Availability Set</h3>
+        <p style="color: #9ca3af; margin-bottom: 1.5rem;">Set your weekly availability to let students know when you're free</p>
+        <a href="{% url 'tutor_availability' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-calendar-plus"></i> Set Your Availability
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Profile Info -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 1.5rem 0; color: var(--primary-color);"><i class="fas fa-user"></i> Profile Information</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div>
+                <strong style="color: #6b7280; font-size: 0.9rem;">Full Name</strong>
+                <div style="margin-top: 0.25rem; font-size: 1rem;">{{ profile.full_name }}</div>
+            </div>
+            <div>
+                <strong style="color: #6b7280; font-size: 0.9rem;">Email</strong>
+                <div style="margin-top: 0.25rem; font-size: 1rem;">{{ profile.user.email }}</div>
+            </div>
+            <div>
+                <strong style="color: #6b7280; font-size: 0.9rem;">Mobile</strong>
+                <div style="margin-top: 0.25rem; font-size: 1rem;">{{ profile.mobile_number }}</div>
+            </div>
+            <div>
+                <strong style="color: #6b7280; font-size: 0.9rem;">Experience</strong>
+                <div style="margin-top: 0.25rem; font-size: 1rem;">{{ profile.experience_years }} years</div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

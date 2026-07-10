@@ -1,0 +1,202 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Sign Up - Tutor Finder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-card {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+    
+    .role-selection {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .role-option {
+        border: 2px solid var(--border-color);
+        padding: 1.5rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+        position: relative;
+    }
+    
+    .role-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+    
+    .role-option input[type="radio"]:checked + label {
+        color: var(--primary-color);
+    }
+    
+    .role-option:has(input:checked) {
+        border-color: var(--primary-color);
+        background: rgba(74, 144, 226, 0.1);
+    }
+    
+    .role-option label {
+        cursor: pointer;
+        font-weight: 600;
+        display: block;
+    }
+    
+    .phone-input-group {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 0.5rem;
+    }
+    
+    .country-code {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background: var(--light-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .terms-text {
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .terms-text a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .password-hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card register-card">
+    <h2 style="text-align: center; margin-bottom: 2rem;">
+        <i class="fas fa-user-plus"></i> Create Your Account
+    </h2>
+    
+    <form method="post" id="signupForm">
+        {% csrf_token %}
+        
+        <!-- Role Selection -->
+        <div class="role-selection">
+            <div class="role-option">
+                <input type="radio" name="role" value="tutor" id="role_tutor" checked>
+                <label for="role_tutor">
+                    <i class="fas fa-chalkboard-teacher" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                    I am a Tutor
+                </label>
+            </div>
+            <div class="role-option">
+                <input type="radio" name="role" value="student" id="role_student">
+                <label for="role_student">
+                    <i class="fas fa-user-graduate" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                    I am a Student
+                </label>
+            </div>
+        </div>
+        
+        <!-- Full Name -->
+        <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}">Full Name *</label>
+            {{ form.full_name }}
+            {{ form.full_name.errors }}
+        </div>
+        
+        <!-- Email -->
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email Address *</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        
+        <!-- Mobile Number -->
+        <div class="form-group">
+            <label><i class="fas fa-mobile-alt"></i> Mobile Number *</label>
+            <div style="display: flex; gap: 0.5rem;">
+                <div style="flex: 0 0 120px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #374151;">
+                    +91
+                </div>
+                <div style="flex: 1;">
+                    {{ form.mobile_number }}
+                </div>
+            </div>
+            {% if form.mobile_number.errors %}
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ form.mobile_number.errors.0 }}
+                </div>
+            {% endif %}
+            <small style="display: block; margin-top: 0.5rem; color: #666; font-size: 0.875rem;">
+                Enter 10-digit mobile number
+            </small>
+        </div>
+        
+        <!-- Gender -->
+        <div class="form-group">
+            <label for="{{ form.gender.id_for_label }}">Gender *</label>
+            {{ form.gender }}
+            {{ form.gender.errors }}
+        </div>
+                
+        <!-- Set Password -->
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">Set Password *</label>
+            {{ form.password1 }}
+            <div class="password-hint">
+                <i class="fas fa-info-circle"></i> Minimum 8 characters
+            </div>
+            {{ form.password1.errors }}
+        </div>
+        
+        <!-- Confirm Password -->
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">Confirm Password *</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </div>
+        
+        <!-- General Form Errors -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: bold;">
+            <i class="fas fa-user-check"></i> Create Profile
+        </button>
+        
+        <!-- Terms -->
+        <p class="terms-text">
+            By Signing Up, you agree to our 
+            <a href="#">Terms of Use</a> & <a href="#">Privacy Policy</a>
+        </p>
+    </form>
+    
+    <p style="margin-top: 1.5rem; text-align: center;">
+        Already have an account? <a href="{% url 'login' %}">Login here</a>
+    </p>
+</div>
+{% endblock %}

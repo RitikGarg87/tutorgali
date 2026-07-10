@@ -1,0 +1,14 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Logged Out - Tutor Finder{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+    <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success-color); margin-bottom: 1rem;"></i>
+    <h2>You have been logged out successfully</h2>
+    <p style="margin: 1.5rem 0;">Thank you for using TutorGali!</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt"></i> Login Again
+    </a>
+</div>
+{% endblock %}

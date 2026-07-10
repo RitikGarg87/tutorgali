@@ -1,0 +1,154 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Edit Profile - Tutor Finder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .verified-badge-small {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="profile-header">
+        <h2><i class="fas fa-user-edit"></i> Edit Your Profile</h2>
+        {% if profile.role == 'tutor' and profile.is_verified %}
+            <span class="verified-badge-small">
+                <i class="fas fa-check-circle"></i> Verified Tutor
+            </span>
+        {% endif %}
+    </div>
+    
+    <div class="alert alert-{% if profile.role == 'student' %}info{% else %}{% if profile.is_verified %}success{% else %}warning{% endif %}{% endif %}" style="margin-bottom: 1.5rem;">
+        <strong>Your Role:</strong> 
+        {% if profile.role == 'student' %}
+            <i class="fas fa-user-graduate"></i> Student
+        {% elif profile.role == 'tutor' %}
+            <i class="fas fa-chalkboard-teacher"></i> Tutor
+            {% if not profile.is_verified %}
+                <span style="display: block; margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle"></i> 
+                    <a href="{% url 'verification' %}" style="color: inherit; text-decoration: underline;">
+                        Get verified to display your badge!
+                    </a>
+                </span>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if profile.role == 'tutor' %}
+            <!-- Tutor-specific fields -->
+            <div class="form-group">
+                <label for="{{ form.subject.id_for_label }}">
+                    <i class="fas fa-book"></i> Subject
+                </label>
+                {{ form.subject }}
+                {% if form.subject.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.subject.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.qualification.id_for_label }}">
+                    <i class="fas fa-certificate"></i> Qualification
+                </label>
+                {{ form.qualification }}
+                {% if form.qualification.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.qualification.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.experience.id_for_label }}">
+                    <i class="fas fa-briefcase"></i> Experience (Years)
+                </label>
+                {{ form.experience }}
+                {% if form.experience.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.experience.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.hourly_rate.id_for_label }}">
+                    <i class="fas fa-rupee-sign"></i> Hourly Rate (₹)
+                </label>
+                {{ form.hourly_rate }}
+                {% if form.hourly_rate.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.hourly_rate.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+        {% elif profile.role == 'student' %}
+            <!-- Student-specific fields -->
+            <div class="form-group">
+                <label for="{{ form.location.id_for_label }}">
+                    <i class="fas fa-map-marker-alt"></i> Location
+                </label>
+                {{ form.location }}
+                {% if form.location.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.location.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i class="fas fa-save"></i> Save Changes
+        </button>
+    </form>
+
+    <div style="margin-top: 1.5rem; text-align: center;">
+        {% if profile.role == 'student' %}
+            <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        {% elif profile.role == 'tutor' %}
+            <a href="{% url 'tutor_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

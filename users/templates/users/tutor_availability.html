@@ -1,0 +1,126 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Set Availability{% endblock %}
+
+{% block extra_css %}
+<style>
+    .time-slot-card {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 70px;
+    }
+    
+    .time-slot-card:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    .time-slot-card input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 1rem;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    
+    .time-slot-card input[type="checkbox"]:checked + .time-label {
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .time-slot-card.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+    
+    .time-label {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #1f2937;
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 2rem auto; padding: 0 1rem;">
+    
+    <!-- Header with White Background -->
+    <div style="background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+        <h1 style="color: #1f2937; margin-bottom: 0.5rem; font-size: 2rem; font-weight: 700;">
+            <i class="fas fa-calendar-alt" style="color: #667eea;"></i> Set Your Availability
+        </h1>
+        <p style="color: #6b7280; font-size: 1.1rem; margin: 0;">
+            Select your available time slots for Monday to Saturday
+        </p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Time Slots Selection -->
+        <div style="background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="color: #1f2937; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600;">
+                    <i class="fas fa-clock" style="color: #667eea;"></i> Available Time Slots
+                </h2>
+                <p style="color: #6b7280; margin: 0; font-size: 0.95rem;">
+                    Click on time slots to select/deselect. Selected slots will apply to all weekdays (Monday-Saturday).
+                </p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+                {% for slot, label in time_slots %}
+                <label class="time-slot-card">
+                    <input type="checkbox" name="time_slots" value="{{ slot }}" 
+                           {% if slot in selected_slots %}checked{% endif %}
+                           onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                    <span class="time-label">{{ label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            
+            <!-- Info Note -->
+            <div style="margin-top: 2rem; padding: 1.25rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%); border-radius: 10px; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; align-items: start; gap: 1rem;">
+                    <i class="fas fa-info-circle" style="color: #3b82f6; font-size: 1.5rem; margin-top: 0.2rem;"></i>
+                    <div>
+                        <h3 style="margin: 0 0 0.5rem 0; color: #1e40af; font-size: 1rem; font-weight: 600;">Important Note</h3>
+                        <p style="margin: 0; color: #1e40af; font-size: 0.95rem; line-height: 1.6;">
+                            • Selected time slots will be applied to <strong>Monday through Saturday</strong><br>
+                            • Sunday is automatically set as <strong>off day</strong><br>
+                            • You can update your availability anytime from the dashboard
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit Buttons -->
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <button type="submit" style="padding: 1.25rem 3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s;">
+                <i class="fas fa-save"></i> Save Availability
+            </button>
+            <a href="{% url 'tutor_dashboard' %}" style="padding: 1.25rem 3rem; background: white; color: #374151; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1.1rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s;">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Initialize selected state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.time-slot-card input[type="checkbox"]:checked').forEach(function(checkbox) {
+        checkbox.parentElement.classList.add('selected');
+    });
+});
+</script>
+{% endblock %}

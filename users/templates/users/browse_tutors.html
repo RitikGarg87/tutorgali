@@ -1,0 +1,251 @@
+{% extends 'users/base.html' %}
+{% block title %}Find Tutors - TutorGali{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 950px;">
+    <h2 style="margin-bottom: 0.5rem;">
+        <i class="fas fa-search-location"></i> Find Tutors Near You
+    </h2>
+    <p style="margin-bottom: 1.5rem; color:#555;">
+        Allow location access and choose your preferences. We will show tutors near you
+        who match your grade, subject, mode and time slot.
+    </p>
+
+    <form id="search-form" method="get" action="{% url 'search_tutors' %}">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Grade</label>
+                <select name="grade" class="form-control" required>
+                    <option value="">Select Grade</option>
+                    <option value="nursery_to_5">Nursery to 5th</option>
+                    <option value="grade_6">6th</option>
+                    <option value="grade_7">7th</option>
+                    <option value="grade_8">8th</option>
+                    <option value="grade_9">9th</option>
+                    <option value="grade_10">10th</option>
+                    <option value="grade_11">11th</option>
+                    <option value="grade_12">12th</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Subject (keyword)</label>
+                <input type="text" name="subject" class="form-control"
+                       placeholder="e.g. Math, Physics">
+            </div>
+
+            <div class="form-group">
+                <label>Teaching Mode</label>
+                <select name="mode" class="form-control">
+                    <option value="">Any</option>
+                    <option value="online">Online</option>
+                    <option value="student_home">At Student's Home</option>
+                    <option value="my_home">At Tutor's Home</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Preferred Time Slot</label>
+                <select name="time_slot" class="form-control">
+                    <option value="">Any time</option>
+                    <option value="04:00-05:00">04:00 AM - 05:00 AM</option>
+                    <option value="05:00-06:00">05:00 AM - 06:00 AM</option>
+                    <option value="06:00-07:00">06:00 AM - 07:00 AM</option>
+                    <option value="07:00-08:00">07:00 AM - 08:00 AM</option>
+                    <option value="08:00-09:00">08:00 AM - 09:00 AM</option>
+                    <option value="09:00-10:00">09:00 AM - 10:00 AM</option>
+                    <option value="10:00-11:00">10:00 AM - 11:00 AM</option>
+                    <option value="11:00-12:00">11:00 AM - 12:00 PM</option>
+                    <option value="12:00-13:00">12:00 PM - 01:00 PM</option>
+                    <option value="13:00-14:00">01:00 PM - 02:00 PM</option>
+                    <option value="14:00-15:00">02:00 PM - 03:00 PM</option>
+                    <option value="15:00-16:00">03:00 PM - 04:00 PM</option>
+                    <option value="16:00-17:00">04:00 PM - 05:00 PM</option>
+                    <option value="17:00-18:00">05:00 PM - 06:00 PM</option>
+                    <option value="18:00-19:00">06:00 PM - 07:00 PM</option>
+                    <option value="19:00-20:00">07:00 PM - 08:00 PM</option>
+                    <option value="20:00-21:00">08:00 PM - 09:00 PM</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Distance</label>
+                <select name="distance_km" class="form-control" required>
+                    <option value="1">Within 1 km</option>
+                    <option value="2">Within 2 km</option>
+                    <option value="3">Within 3 km</option>
+                    <option value="4">Within 4 km</option>
+                    <option value="5" selected>Within 5 km</option>
+                    <option value="6">Within 6 km</option>
+                    <option value="7">Within 7 km</option>
+                    <option value="8">Within 8 km</option>
+                    <option value="9">Within 9 km</option>
+                    <option value="10">Within 10 km</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+          <label>📍 Your Locality</label>
+          <input type="text" id="student-locality" name="student_locality" class="form-control" placeholder="Patel Nagar, New Delhi">
+        </div>
+        <!-- Add after your distance dropdown, before submit button -->
+         <!-- Distance dropdown के बाद, submit से पहले -->
+<div class="form-group" style="margin-top: 1rem;">
+    <button type="button" onclick="pickCurrentLocation()" 
+            class="btn btn-outline-primary btn-lg w-100 py-3" 
+            id="gps-btn"
+            style="border-radius: 12px; font-size: 1.1rem;">
+        <i class="fas fa-location-arrow me-2"></i>Pick Current Location
+    </button>
+    <small class="text-muted mt-2" id="gps-status">Click to use your current location</small>
+</div>
+
+
+
+        <!-- hidden fields for coordinates -->
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="lng" id="lng">
+
+        <div style="margin-top: 1.5rem; display:flex; align-items:center; gap:1rem;">
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                <i class="fas fa-search"></i> Search Tutors Near Me
+            </button>
+            <p id="location-status" style="margin:0; font-size: 0.9rem; color:#555;"></p>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem 2rem;
+    }
+    .form-group label {
+        display:block;
+        font-weight:600;
+        margin-bottom:0.3rem;
+    }
+    .form-group .form-control {
+        width:100%;
+    }
+    .tutor-card {
+        background:white;
+        border-radius:12px;
+        padding:1.2rem 1.5rem;
+        margin-bottom:1rem;
+        box-shadow:0 4px 12px rgba(0,0,0,0.06);
+        display:flex;
+        justify-content:space-between;
+        gap:1rem;
+    }
+</style>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAXefPNxvTiRdc9RCs6acRNA61AWrGORvE&libraries=places&callback=initMap">
+</script>
+
+<script>
+let autocomplete;
+let geocoder;
+
+function initMap() {
+    const input = document.getElementById('student-locality');
+
+    geocoder = new google.maps.Geocoder();
+
+    autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'in' }
+    });
+
+    autocomplete.addListener('place_changed', function () {
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry) return;
+
+        document.getElementById('lat').value = place.geometry.location.lat();
+        document.getElementById('lng').value = place.geometry.location.lng();
+
+        document.getElementById('submit-btn').disabled = false;
+    });
+}
+
+function pickCurrentLocation() {
+    const btn = document.getElementById('gps-btn');
+    const status = document.getElementById('gps-status');
+
+    if (!navigator.geolocation) {
+        alert('Geolocation not supported');
+        return;
+    }
+
+    // Temporary loading UI (but NOT disabled permanently)
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Detecting...';
+    status.textContent = 'Getting your location...';
+
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+
+            reverseGeocode(lat, lng);
+
+            // Restore button (clickable again)
+            btn.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Re-pick Current Location';
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-success');
+
+            status.innerHTML = '<i class="fas fa-map-marker-alt"></i> Location detected';
+        },
+        function () {
+            btn.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Pick Current Location';
+            status.textContent = 'Location access denied. Enter manually.';
+            alert('Please allow location access');
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+function reverseGeocode(lat, lng) {
+    const status = document.getElementById('gps-status');
+
+    geocoder.geocode({ location: { lat, lng } }, function (results, statusCode) {
+        if (statusCode === 'OK' && results[0]) {
+            const locality = results[0].address_components.find(c =>
+                c.types.includes('sublocality') ||
+                c.types.includes('locality')
+            );
+
+            document.getElementById('student-locality').value =
+                locality ? locality.long_name : results[0].formatted_address;
+
+            document.getElementById('submit-btn').disabled = false;
+
+            const btn = document.getElementById('gps-btn');
+            btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pick Current Location';
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-success');
+
+            status.innerHTML = '<i class="fas fa-map-marker-alt"></i> Location detected';
+        } else {
+            resetGpsButton();
+            alert('Unable to detect address');
+        }
+    });
+}
+
+function resetGpsButton() {
+    const btn = document.getElementById('gps-btn');
+    const status = document.getElementById('gps-status');
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Pick Current Location';
+    status.textContent = 'Click to use your current location';
+}
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'users/base.html' %}
+
+{% block title %}My Tutor Requests{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 1000px; padding: 2.5rem 2.5rem 2rem;">
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+            <h2 style="margin:0; font-size:1.8rem; color:#2563eb;">
+                <i class="fas fa-book-reader"></i>
+                <span style="margin-left:0.4rem;">My Tutor Requests</span>
+            </h2>
+            <p style="margin:0.5rem 0 0; color:#4b5563; font-size:0.95rem;">
+                Hello, <strong>{{ profile.full_name|default:user.username }}</strong>.
+                Here are all your tutor requests.
+            </p>
+        </div>
+
+        <a href="{% url 'browse_tutors' %}"
+           style="padding:0.6rem 1.3rem; background:#2563eb; color:#fff; border-radius:999px;
+                  font-size:0.9rem; font-weight:600; text-decoration:none; box-shadow:0 2px 6px rgba(37,99,235,0.35);">
+            <i class="fas fa-search"></i> Find More Tutors
+        </a>
+    </div>
+
+    {% if bookings %}
+        <div style="border-radius: 0.75rem; border:1px solid #e5e7eb; overflow:hidden;">
+            <!-- HEADER ROW -->
+            <div style="background:#f9fafb; padding:0.75rem 1.25rem; font-size:0.8rem; text-transform:uppercase;
+                        letter-spacing:0.05em; color:#6b7280; font-weight:600;">
+                <div style="display:grid;
+                            grid-template-columns: 2fr 1.2fr 1.1fr 1.2fr 1.1fr 1.6fr;
+                            column-gap:0.75rem;">
+                    <span>Tutor</span>
+                    <span>Subject</span>
+                    <span>Grade</span>
+                    <span>Time</span>
+                    <span>Status</span>
+                    <span>Sent On</span>
+                </div>
+            </div>
+
+            {% for b in bookings %}
+                <!-- DATA ROW -->
+                <div style="padding:0.9rem 1.25rem; border-top:1px solid #e5e7eb;
+                            display:grid;
+                            grid-template-columns: 2fr 1.2fr 1.1fr 1.2fr 1.1fr 1.6fr;
+                            column-gap:0.75rem; align-items:center; font-size:0.92rem;">
+
+                    <!-- Tutor -->
+                    <div style="font-weight:600; color:#111827;">
+                        {{ b.tutor.full_name|default:b.tutor.user.username }}
+                    </div>
+
+                    <!-- Subject -->
+                    <div style="color:#374151;">
+                        {{ b.subject|default:"—" }}
+                    </div>
+
+                    <!-- Grade -->
+                    <div style="color:#374151;">
+                        {{ b.grade|default:"—" }}
+                    </div>
+
+                    <!-- Time -->
+                    <div style="color:#374151;">
+                        {{ b.time_slot|default:"—" }}
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        {% if b.status == 'pending' %}
+                            <span style="display:inline-flex; align-items:center; padding:0.2rem 0.6rem;
+                                         border-radius:999px; font-size:0.8rem; font-weight:600;
+                                         background:#fef9c3; color:#92400e;">
+                                <span style="width:8px; height:8px; border-radius:999px; background:#f59e0b; margin-right:0.35rem;"></span>
+                                Pending
+                            </span>
+                        {% elif b.status == 'accepted' %}
+                            <span style="display:inline-flex; align-items:center; padding:0.2rem 0.6rem;
+                                         border-radius:999px; font-size:0.8rem; font-weight:600;
+                                         background:#dcfce7; color:#166534;">
+                                <span style="width:8px; height:8px; border-radius:999px; background:#22c55e; margin-right:0.35rem;"></span>
+                                Accepted
+                            </span>
+                        {% elif b.status == 'rejected' %}
+                            <span style="display:inline-flex; align-items:center; padding:0.2rem 0.6rem;
+                                         border-radius:999px; font-size:0.8rem; font-weight:600;
+                                         background:#fee2e2; color:#b91c1c;">
+                                <span style="width:8px; height:8px; border-radius:999px; background:#ef4444; margin-right:0.35rem;"></span>
+                                Rejected
+                            </span>
+                        {% else %}
+                            <span style="font-size:0.8rem; color:#6b7280;">
+                                {{ b.status|default:"N/A" }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Date -->
+                    <div style="color:#6b7280; font-size:0.85rem;">
+                        {{ b.created_at|date:"d M Y, h:i A" }}
+                    </div>
+                </div>
+
+                <!-- ACCEPTED CONTACT BLOCK -->
+                {% if b.status == 'accepted' %}
+                <div style="padding: 0 1.25rem 1rem; border-top: 1px dashed #d1fae5; background:#f0fdf4;">
+                    <div style="margin-top:0.9rem; padding:1rem 1.1rem; background:#ecfdf5;
+                                border:1px solid #a7f3d0; border-radius:12px;
+                                display:flex; justify-content:space-between; align-items:center;
+                                gap:1rem; flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size:0.82rem; color:#065f46; margin-bottom:0.25rem; font-weight:700;">
+                                Tutor Contact Details
+                            </div>
+                            <div style="font-size:1rem; color:#064e3b;">
+                                Mobile:
+                                <strong>{{ b.tutor.mobile_number|default:"Number not available" }}</strong>
+                            </div>
+                        </div>
+
+                        {% if b.tutor.mobile_number %}
+                        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                            <a href="tel:{{ b.tutor.mobile_number }}"
+                               style="text-decoration:none; padding:0.65rem 1rem; border-radius:999px;
+                                      background:white; color:#166534; border:1px solid #16a34a;
+                                      font-weight:600; font-size:0.9rem;">
+                                <i class="fas fa-phone-alt"></i> Call
+                            </a>
+
+                            <a href="https://wa.me/91{{ b.tutor.mobile_number }}"
+                               target="_blank" rel="noopener noreferrer"
+                               style="text-decoration:none; padding:0.65rem 1rem; border-radius:999px;
+                                      background:#16a34a; color:white; border:none;
+                                      font-weight:600; font-size:0.9rem;">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="margin-top:1.5rem; padding:1.25rem 1.5rem; background:#f9fafb; border-radius:0.75rem;
+                    border:1px dashed #d1d5db; text-align:center; color:#6b7280;">
+            <p style="margin:0 0 0.5rem; font-weight:500;">No requests yet</p>
+            <p style="margin:0 0 1rem;">Start by finding a tutor in your area and sending your first request.</p>
+            <a href="{% url 'search_tutors' %}"
+               style="padding:0.55rem 1.3rem; background:#2563eb; color:#fff; border-radius:999px;
+                      font-size:0.9rem; font-weight:600; text-decoration:none;">
+                <i class="fas fa-search"></i> Find Tutors
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

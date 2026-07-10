@@ -1,0 +1,335 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}Student Requests{% endblock %}
+
+{% block content %}
+<div class="requests-container">
+
+    <div class="requests-hero">
+        <h2 class="requests-title">
+            <i class="fas fa-user-clock me-2"></i> Student Requests
+        </h2>
+        <p class="requests-subtitle">
+            Review incoming student booking requests and accept or reject them.
+        </p>
+    </div>
+
+    {% if messages %}
+        <div class="requests-messages">
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if incoming_requests %}
+        <div class="requests-grid">
+            {% for req in incoming_requests %}
+            <div class="request-card">
+
+                <div class="request-card-top">
+                    <div>
+                        <h5 class="student-name">
+                            {{ req.student.full_name|default:req.student.user.username }}
+                        </h5>
+                        <div class="request-date">
+                            {{ req.created_at|date:"d M Y, H:i" }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {% if req.status == 'pending' %}
+                            <span class="status-badge status-pending">Pending</span>
+                        {% elif req.status == 'accepted' %}
+                            <span class="status-badge status-accepted">Accepted</span>
+                        {% elif req.status == 'rejected' %}
+                            <span class="status-badge status-rejected">Rejected</span>
+                        {% else %}
+                            <span class="status-badge status-default">{{ req.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="request-details">
+                    {% if req.subject %}
+                    <div class="request-line">
+                        <span class="request-label">Subject</span>
+                        <span class="request-value">{{ req.subject|title }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if req.grade %}
+                    <div class="request-line">
+                        <span class="request-label">Grade</span>
+                        <span class="request-value">
+                            {{ req.grade|cut:"grade_"|cut:"nursery_to_"|title }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {% if req.time_slot %}
+                    <div class="request-line">
+                        <span class="request-label">Time Slot</span>
+                        <span class="request-value time-chip">{{ req.time_slot }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if req.student.mobile_number and has_active_subscription %}
+                    <div class="request-line">
+                        <span class="request-label">Student Mobile</span>
+                        <span class="request-value mobile-value">{{ req.student.mobile_number }}</span>
+                    </div>
+                    {% elif req.student.mobile_number %}
+                    <div class="request-line">
+                        <span class="request-label">Student Mobile</span>
+                        <span class="request-value">
+                            <a href="{% url 'subscription_plans' %}" class="link-subscription">
+                                🔒 Buy subscription to view number
+                            </a>
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {% if req.message %}
+                    <div class="request-message-box">
+                        <div class="request-message-title">Message</div>
+                        <div class="request-message-text">{{ req.message }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="request-actions">
+                    {% if req.status == 'pending' %}
+                        <div class="request-btn-row">
+                            <form method="post" action="{% url 'update_booking_request_status' req.id 'accept' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-request btn-accept">
+                                    <i class="fas fa-check"></i> Accept
+                                </button>
+                            </form>
+
+                            <form method="post" action="{% url 'update_booking_request_status' req.id 'reject' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-request btn-reject">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+
+                    {% elif req.status == 'accepted' %}
+                        {% if req.student.mobile_number and has_active_subscription %}
+                            <div class="request-btn-row accepted-action-row">
+                                <a href="tel:{{ req.student.mobile_number }}" class="btn-request btn-call">
+                                    <i class="fas fa-phone-alt"></i> Call Student
+                                </a>
+
+                                <a href="https://wa.me/91{{ req.student.mobile_number }}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="btn-request btn-whatsapp">
+                                    <i class="fab fa-whatsapp"></i> WhatsApp Student
+                                </a>
+                            </div>
+                        {% elif req.student.mobile_number %}
+                            <div class="request-subscription-box">
+                                <p class="subscription-box-text">
+                                    Buy a subscription to contact this student instantly.
+                                </p>
+                                <a href="{% url 'subscription_plans' %}" class="btn-request btn-subscription">
+                                    View Subscription Plans
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="request-info-box">Student number not available</div>
+                        {% endif %}
+
+                    {% elif req.status == 'rejected' %}
+                        <div class="request-info-box request-info-rejected">
+                            No further action
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-request-card">
+            <p class="empty-request-title">No student requests yet</p>
+            <p class="empty-request-text">
+                Once students contact you from search results, their requests will appear here.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .request-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .request-label {
+        min-width: 135px;
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 15px;
+    }
+
+    .request-value {
+        color: #475467;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .student-name {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+        color: #0f172a;
+    }
+
+    .request-date {
+        font-size: 14px;
+        color: #667085;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 14px;
+    }
+
+    .status-accepted {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .request-message-box {
+        margin-top: 18px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 20px;
+    }
+
+    .request-message-title {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 13px;
+        font-weight: 800;
+        color: #6b7280;
+        margin-bottom: 10px;
+    }
+
+    .request-message-text {
+        font-size: 16px;
+        line-height: 1.6;
+        color: #111827;
+        font-weight: 500;
+    }
+
+    .time-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .mobile-value {
+        color: #111827;
+        font-weight: 800;
+    }
+
+    .link-subscription {
+        color: #2563eb;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .link-subscription:hover {
+        text-decoration: underline;
+    }
+
+    .request-subscription-box {
+        margin-top: 8px;
+        padding: 22px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+        border: 1px solid #dbeafe;
+        text-align: center;
+    }
+
+    .subscription-box-text {
+        margin: 0 0 14px;
+        color: #475467;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .btn-subscription {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 360px;
+        min-height: 56px;
+        padding: 14px 22px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        color: #fff !important;
+        font-size: 18px;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 14px 30px rgba(34, 197, 94, 0.24);
+    }
+
+    .btn-subscription:hover {
+        transform: translateY(-1px);
+        color: #fff !important;
+    }
+
+    .btn-request {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    @media (max-width: 576px) {
+        .student-name {
+            font-size: 1.65rem;
+        }
+
+        .request-label {
+            min-width: 100%;
+            margin-bottom: -2px;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="{% static 'css/tutor_booking_requests.css' %}">
+{% endblock %}

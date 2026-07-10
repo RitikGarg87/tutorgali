@@ -1,0 +1,185 @@
+{% extends 'users/base.html' %}
+{% block title %}Tutors Near You - TutorGali{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Page header -->
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <div>
+            <h2 class="mb-1 tutors-heading">
+                <i class="fas fa-chalkboard-teacher me-2 text-primary"></i>
+                Tutors Near You
+            </h2>
+            <p class="text-muted mb-0 tutors-subtitle">
+                Showing tutors within {{ distance_km }} km
+                {% if subject %} for "<strong>{{ subject }}</strong>"{% endif %}
+                {% if grade %} (grade {{ grade }}){% endif %}
+                {% if time_slot %} at time slot <strong>{{ time_slot }}</strong>{% endif %}.
+            </p>
+        </div>
+        <a href="{% url 'browse_tutors' %}" class="btn btn-outline-light change-filters-btn">
+            Change Filters
+        </a>
+    </div>
+
+    {% if results %}
+        <div class="tutor-grid mt-3">
+            {% for tutor, dist in results %}
+                <div class="tutor-card">
+
+                    <!-- HEADER -->
+                    <div class="tutor-card-header">
+                        <div class="avatar">
+                            {{ tutor.full_name.0|upper }}
+                        </div>
+                        <div class="name-block">
+                            <div class="name-row">
+                                <h3 class="tutor-name">{{ tutor.full_name }}</h3>
+                                {% if tutor.is_verified %}
+                                    <span class="badge-verified-pill">
+                                        <span class="dot"></span> Verified
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="tutor-location">
+                                {{ tutor.city|default:"" }}{% if tutor.state %}, {{ tutor.state }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- BODY -->
+                    <div class="tutor-card-body">
+                        {% if dist %}
+                        <p class="line">
+                            <span class="lab">Distance:</span>
+                            <span>{{ dist|floatformat:1 }} km away</span>
+                        </p>
+                        {% endif %}
+
+                        <p class="line">
+                            <span class="lab">Experience:</span>
+                            <span>{{ tutor.experience_years|default:"N/A" }} years</span>
+                        </p>
+                        <p class="line">
+                            <span class="lab">Address:</span>
+                            <span>{{ tutor.address_line2|default:"Not provided" }}, {{ tutor.city|default:"" }}{% if tutor.pincode %} – {{ tutor.pincode }}{% endif %}</span>
+                        </p>
+                        <p class="line">
+                            <span class="lab">Education:</span>
+                            <span>{{ tutor.qualification|default:"N/A" }}</span>
+                        </p>
+
+                        {% with rates=tutor.grade_rates.all %}
+                        {% if rates %}
+                            <p class="side-heading">Subjects &amp; Rates</p>
+                            <ul class="rates-list">
+                                {% for gr in rates %}
+                                    {% if not grade or gr.grade == grade %}
+                                    <li>
+                                        <span class="grade-label">{{ gr.get_grade_display }}:</span>
+                                        <span class="subjects">
+                                            {{ gr.subjects|truncatechars:60 }}
+                                        </span><br>
+                                        <span class="rate-line">
+                                            {% if gr.rate_online %}
+                                                Online ₹{{ gr.rate_online }} /hr
+                                            {% elif gr.rate_student_home %}
+                                                At Student ₹{{ gr.rate_student_home }} /hr
+                                            {% elif gr.rate_my_home %}
+                                                At Tutor ₹{{ gr.rate_my_home }} /hr
+                                            {% else %}
+                                                Rate not available
+                                            {% endif %}
+                                        </span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="tutor-card-footer">
+                        {% if tutor.booking_status == 'accepted' %}
+                            <div class="status-row">
+                                <span class="badge-status badge-status-accepted">
+                                    Request accepted
+                                </span>
+                            </div>
+                            <a href="{% url 'student_bookings' %}" class="btn btn-success contact-btn">
+                                View Contact Details
+                            </a>
+
+                        {% elif tutor.booking_status == 'pending' %}
+                            <div class="status-row">
+                                <span class="badge-status badge-status-pending">
+                                    Request pending
+                                </span>
+                            </div>
+                            <a href="{% url 'student_bookings' %}" class="btn btn-outline-secondary contact-btn">
+                                View My Requests
+                            </a>
+
+                        {% elif tutor.booking_status == 'rejected' %}
+                            <div class="status-row">
+                                <span class="badge-status badge-status-rejected">
+                                    Request rejected
+                                </span>
+                            </div>
+
+                            <form method="post" action="{% url 'create_booking_request' tutor.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="subject" value="{{ subject|default:'' }}">
+                                <input type="hidden" name="grade" value="{{ grade|default:'' }}">
+                                <input type="hidden" name="time_slot" value="{{ time_slot|default:'' }}">
+
+                                <textarea name="message"
+                                          rows="2"
+                                          placeholder="Send a fresh message to this tutor"
+                                          class="message-box"></textarea>
+
+                                <button type="submit" class="btn btn-primary contact-btn">
+                                    Send Request Again
+                                </button>
+                            </form>
+
+                        {% else %}
+                            {% if tutor.is_verified %}
+                                <span class="badge-verified-small">
+                                    Verified tutor
+                                </span>
+                            {% endif %}
+
+                            <form method="post" action="{% url 'create_booking_request' tutor.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="subject" value="{{ subject|default:'' }}">
+                                <input type="hidden" name="grade" value="{{ grade|default:'' }}">
+                                <input type="hidden" name="time_slot" value="{{ time_slot|default:'' }}">
+
+                                <textarea name="message"
+                                          rows="2"
+                                          placeholder="Tell the tutor about your requirement"
+                                          class="message-box"></textarea>
+
+                                <button type="submit" class="btn btn-primary contact-btn">
+                                    Contact This Tutor
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light mt-4" style="border-radius:12px;">
+            No tutors found matching your filters. Try changing distance, subject, or time slot.
+        </div>
+    {% endif %}
+</div>
+
+<link rel="stylesheet" href="{% static 'css/tutor_list.css' %}">
+{% endblock %}

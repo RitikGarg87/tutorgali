@@ -1,0 +1,230 @@
+/* Container header */
+
+.tutors-heading {
+    font-weight: 700;
+}
+
+.tutors-subtitle {
+    font-size: 0.9rem;
+}
+
+.change-filters-btn {
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+/* Grid: at least 3 per row on desktop */
+
+.tutor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+/* Tablet: 2 per row */
+@media (max-width: 991.98px) {
+    .tutor-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Mobile: 1 per row */
+@media (max-width: 575.98px) {
+    .tutor-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card */
+
+.tutor-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 1.25rem 1.4rem;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Header */
+
+.tutor-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #e5edff, #c7d2fe);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #374151;
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+}
+
+.name-block {
+    flex: 1;
+}
+
+.name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.tutor-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.tutor-location {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Verified pill in header */
+
+.badge-verified-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.badge-verified-pill .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #22c55e;
+}
+
+/* Body */
+
+.tutor-card-body {
+    font-size: 0.86rem;
+    color: #374151;
+    line-height: 1.5;
+    margin-top: 0.2rem;
+}
+
+.tutor-card-body .line {
+    margin: 0 0 0.25rem;
+}
+
+.tutor-card-body .lab {
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+.side-heading {
+    margin: 0.5rem 0 0.25rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.rates-list {
+    list-style: disc;
+    padding-left: 1rem;
+    margin: 0;
+}
+
+.grade-label {
+    font-weight: 600;
+}
+
+.rate-line {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Footer */
+
+.tutor-card-footer {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: auto;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+}
+
+.badge-status-accepted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* small verified tag when no booking */
+
+.badge-verified-small {
+    align-self: flex-start;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+}
+
+/* Contact form */
+
+.message-box {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 8px;
+    border: 1px solid #d0d7e2;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    resize: vertical;
+    background: #f7f9fc;
+    color: #333;
+    margin-bottom: 0.4rem;
+}
+
+.contact-btn {
+    width: 100%;
+    font-size: 0.86rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 7px 0;
+    box-shadow: 0 2px 6px rgba(0, 94, 184, 0.28);
+}
+
+.badge-status-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
