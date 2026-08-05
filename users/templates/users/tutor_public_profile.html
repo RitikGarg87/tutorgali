@@ -1,0 +1,977 @@
+{% extends 'users/base.html' %}
+{% block title %}{{ tutor.full_name }} — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+
+  /* ── Page Layout ── */
+  .profile-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── LEFT: Sticky Summary Card ── */
+  .profile-sidebar {
+    position: sticky;
+    top: calc(var(--nav-height) + 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .profile-hero-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 28px 24px;
+    text-align: center;
+  }
+
+  .profile-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    font-size: 2.2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: var(--shadow-primary);
+  }
+
+  .profile-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .profile-location {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .profile-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  /* Star rating display */
+  .stars-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .stars-row {
+    display: flex;
+    gap: 2px;
+  }
+
+  .star-filled { color: #f59e0b; font-size: 1.1rem; }
+  .star-half   { color: #f59e0b; font-size: 1.1rem; }
+  .star-empty  { color: #d1d5db; font-size: 1.1rem; }
+
+  .rating-number {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .rating-count {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  .no-rating-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Quick info rows */
+  .quick-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .quick-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+
+  .quick-info-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-xs);
+    background: var(--gradient-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .quick-info-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .quick-info-value {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Contact / Request button */
+  .sidebar-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: var(--gradient);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-primary);
+    text-decoration: none;
+    min-height: 48px;
+    margin-top: 16px;
+  }
+
+  .sidebar-action-btn:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
+
+  /* ── RIGHT: Main Content ── */
+  .profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Section cards */
+  .profile-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+  }
+
+  .profile-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--gradient-soft);
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .profile-section-header i { color: var(--primary); }
+
+  .profile-section-body { padding: 20px; }
+
+  /* Bio */
+  .bio-text {
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    line-height: 1.75;
+  }
+
+  /* Chips */
+  .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+
+  .chip-primary { background: var(--gradient-soft); color: var(--primary); border-color: rgba(102,126,234,0.25); }
+  .chip-success { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .chip-warning { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-border); }
+
+  /* Grade/Subject table */
+  .grade-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .grade-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--bg-page);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+  }
+  .grade-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    vertical-align: top;
+  }
+  .grade-table tr:last-child td { border-bottom: none; }
+  .grade-table tr:hover td { background: var(--gradient-soft); }
+  .grade-label-cell { font-weight: 700; white-space: nowrap; }
+  .subjects-cell { color: var(--text-secondary); }
+  .rate-cell { font-weight: 600; color: var(--primary); white-space: nowrap; }
+
+  /* Availability slots */
+  .slots-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+  .slot-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    background: var(--gradient-soft);
+    border: 1px solid rgba(102,126,234,0.2);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  /* ── REVIEWS SECTION ── */
+  .review-summary {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .review-big-score {
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .review-big-number {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .review-big-stars { margin: 6px 0 4px; }
+  .review-big-count { font-size: 0.8rem; color: var(--text-secondary); }
+
+  .review-bar-chart {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+
+  .bar-label { width: 14px; font-weight: 700; color: var(--text-secondary); text-align: right; }
+  .bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .bar-fill  { height: 100%; background: #f59e0b; border-radius: 999px; transition: width 0.5s ease; }
+  .bar-count { width: 20px; font-weight: 600; color: var(--text-secondary); }
+
+  /* Review form */
+  .review-form-card {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--gradient-soft);
+  }
+
+  .review-form-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* CSS-only star rating input */
+  .star-rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 4px;
+    margin-bottom: 14px;
+    width: fit-content;
+  }
+
+  .star-rating-input input[type="radio"] { display: none; }
+
+  .star-rating-input label {
+    font-size: 2rem;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: color 0.15s;
+    line-height: 1;
+  }
+
+  .star-rating-input label:hover,
+  .star-rating-input label:hover ~ label,
+  .star-rating-input input:checked ~ label {
+    color: #f59e0b;
+  }
+
+  .review-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    background: var(--gradient);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-primary);
+    margin-top: 12px;
+    min-height: 42px;
+  }
+
+  .review-submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* My existing review */
+  .my-review-card {
+    padding: 16px 20px;
+    background: var(--success-bg);
+    border-bottom: 1px solid var(--success-border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .my-review-stars { color: #f59e0b; font-size: 1rem; letter-spacing: 2px; }
+  .my-review-comment { font-size: 0.88rem; color: var(--text-primary); margin-top: 4px; line-height: 1.5; }
+  .my-review-date { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+  .review-action-btns { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .btn-edit-review {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; background: var(--gradient); color: #fff;
+    border: none; border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--transition);
+  }
+  .btn-edit-review:hover { opacity: 0.88; }
+
+  .btn-delete-review {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; background: var(--danger-bg); color: var(--danger);
+    border: 1px solid var(--danger-border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--transition);
+  }
+  .btn-delete-review:hover { background: var(--danger); color: #fff; }
+
+  /* Review list */
+  .review-list { padding: 0 20px; }
+
+  .review-item {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 14px;
+  }
+
+  .review-item:last-child { border-bottom: none; }
+
+  .reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .review-body { flex: 1; }
+
+  .reviewer-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+
+  .review-stars { color: #f59e0b; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 6px; }
+
+  .review-comment {
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .review-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+  }
+
+  .no-reviews-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  .no-reviews-state i { font-size: 2.5rem; color: var(--border); margin-bottom: 12px; display: block; }
+
+  /* Edit review toggle */
+  .edit-review-form { display: none; padding: 20px; border-bottom: 1px solid var(--border); background: var(--gradient-soft); }
+  .edit-review-form.open { display: block; }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .profile-page { grid-template-columns: 1fr; }
+    .profile-sidebar { position: static; }
+  }
+
+  @media (max-width: 480px) {
+    .review-summary { flex-direction: column; gap: 16px; }
+    .grade-table { font-size: 0.8rem; }
+    .grade-table th, .grade-table td { padding: 8px 10px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+
+  <!-- ══════════════════════════════════
+       LEFT SIDEBAR — Profile Summary
+  ══════════════════════════════════ -->
+  <aside class="profile-sidebar">
+
+    <!-- Hero Card -->
+    <div class="profile-hero-card">
+      <div class="profile-avatar">{{ tutor.full_name.0|upper }}</div>
+
+      <div class="profile-name">{{ tutor.full_name }}</div>
+
+      <div class="profile-location">
+        <i class="fas fa-map-marker-alt"></i>
+        {{ tutor.city|default:"" }}{% if tutor.state %}, {{ tutor.state }}{% endif %}
+      </div>
+
+      <!-- Badges -->
+      <div class="profile-badges">
+        {% if tutor.is_verified %}
+          <span class="badge badge-verified"><i class="fas fa-check-circle"></i> Verified</span>
+        {% endif %}
+        {% if tutor.experience_years %}
+          <span class="badge badge-primary">{{ tutor.experience_years }} yrs exp</span>
+        {% endif %}
+      </div>
+
+      <!-- Star Rating Summary -->
+      <div class="stars-display">
+        {% if tutor.avg_rating %}
+          <div class="stars-row">
+            {% with r=tutor.avg_rating %}
+              {% for i in "12345" %}
+                {% if forloop.counter <= r %}
+                  <i class="fas fa-star star-filled"></i>
+                {% else %}
+                  <i class="far fa-star star-empty"></i>
+                {% endif %}
+              {% endfor %}
+            {% endwith %}
+          </div>
+          <span class="rating-number">{{ tutor.avg_rating }}</span>
+          <span class="rating-count">({{ tutor.review_count }} review{{ tutor.review_count|pluralize }})</span>
+        {% else %}
+          <span class="no-rating-text">No reviews yet</span>
+        {% endif %}
+      </div>
+
+      <!-- Quick Info -->
+      <div class="quick-info">
+        {% if tutor.qualification %}
+          <div class="quick-info-row">
+            <div class="quick-info-icon"><i class="fas fa-graduation-cap"></i></div>
+            <div>
+              <div class="quick-info-label">Qualification</div>
+              <div class="quick-info-value">{{ tutor.qualification }}</div>
+            </div>
+          </div>
+        {% endif %}
+        {% if tutor.education_institute %}
+          <div class="quick-info-row">
+            <div class="quick-info-icon"><i class="fas fa-university"></i></div>
+            <div>
+              <div class="quick-info-label">Institute</div>
+              <div class="quick-info-value">{{ tutor.education_institute }}</div>
+            </div>
+          </div>
+        {% endif %}
+        {% if teaching_modes %}
+          <div class="quick-info-row">
+            <div class="quick-info-icon"><i class="fas fa-chalkboard"></i></div>
+            <div>
+              <div class="quick-info-label">Teaching Mode</div>
+              <div class="quick-info-value">{{ teaching_modes|join:" · " }}</div>
+            </div>
+          </div>
+        {% endif %}
+        {% if languages_list %}
+          <div class="quick-info-row">
+            <div class="quick-info-icon"><i class="fas fa-language"></i></div>
+            <div>
+              <div class="quick-info-label">Languages</div>
+              <div class="quick-info-value">{{ languages_list|join:", " }}</div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- CTA Button — changes based on booking status -->
+      {% if user.is_authenticated and user.profile.role == 'student' %}
+
+        {% if booking_status == 'accepted' %}
+          {# Accepted — show contact details #}
+          <a href="{% url 'student_bookings' %}" class="sidebar-action-btn"
+             style="background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 8px 20px rgba(16,185,129,0.3);">
+            <i class="fas fa-phone-alt"></i> View Contact Details
+          </a>
+
+        {% elif booking_status == 'pending' %}
+          {# Pending — show waiting state, not clickable #}
+          <div class="sidebar-action-btn"
+               style="background:#f59e0b; box-shadow:0 8px 20px rgba(245,158,11,0.3); cursor:default;">
+            <i class="fas fa-clock"></i> Request Pending…
+          </div>
+          <a href="{% url 'student_bookings' %}"
+             style="display:block; text-align:center; margin-top:8px; font-size:0.82rem; color:var(--text-secondary); text-decoration:none;">
+            View my requests →
+          </a>
+
+        {% elif booking_status == 'rejected' %}
+          {# Rejected — one-click send again with same search values #}
+          <div style="background:var(--danger-bg); border:1px solid var(--danger-border); border-radius:var(--radius-sm); padding:10px 12px; font-size:0.82rem; color:#991b1b; margin-bottom:10px;">
+            <i class="fas fa-times-circle"></i> Your previous request was rejected.
+          </div>
+          <form method="post" action="{% url 'create_booking_request' tutor.id %}" style="width:100%;">
+            {% csrf_token %}
+            <input type="hidden" name="grade"      value="{{ search_grade }}">
+            <input type="hidden" name="subject"    value="{{ search_subject }}">
+            <input type="hidden" name="time_slot"  value="{{ search_time_slot }}">
+            <input type="hidden" name="mode"       value="{{ search_mode }}">
+            <input type="hidden" name="message"    value="Hi, I would like to reconnect and request your tutoring services.">
+            <button type="submit" class="sidebar-action-btn"
+                    style="width:100%; border:none; cursor:pointer; background:linear-gradient(135deg,#ef4444,#dc2626); box-shadow:0 8px 20px rgba(239,68,68,0.3);">
+              <i class="fas fa-redo"></i> Send Request Again
+            </button>
+          </form>
+
+        {% else %}
+          {# No booking yet — one-click with search values pre-filled #}
+          <form method="post" action="{% url 'create_booking_request' tutor.id %}" style="width:100%;">
+            {% csrf_token %}
+            <input type="hidden" name="grade"      value="{{ search_grade }}">
+            <input type="hidden" name="subject"    value="{{ search_subject }}">
+            <input type="hidden" name="time_slot"  value="{{ search_time_slot }}">
+            <input type="hidden" name="mode"       value="{{ search_mode }}">
+            <input type="hidden" name="message"    value="Hi, I found your profile and would like to connect.">
+            <button type="submit" class="sidebar-action-btn" style="width:100%; border:none; cursor:pointer;">
+              <i class="fas fa-paper-plane"></i> Send Booking Request
+            </button>
+          </form>
+
+          {# Show what will be sent so student knows #}
+          {% if search_grade or search_subject or search_time_slot %}
+            <div style="margin-top:10px; padding:10px 12px; background:var(--gradient-soft); border:1px solid rgba(102,126,234,0.2); border-radius:var(--radius-sm); font-size:0.78rem; color:var(--text-secondary);">
+              <div style="font-weight:700; color:var(--primary); margin-bottom:5px;">
+                <i class="fas fa-info-circle"></i> Request Details
+              </div>
+              {% if search_grade %}
+                <div>📚 Grade: <strong style="color:var(--text-primary);">{{ search_grade|cut:"grade_"|cut:"nursery_to_"|title }}</strong></div>
+              {% endif %}
+              {% if search_subject %}
+                <div>📖 Subject: <strong style="color:var(--text-primary);">{{ search_subject }}</strong></div>
+              {% endif %}
+              {% if search_time_slot %}
+                <div>🕐 Time: <strong style="color:var(--text-primary);">{{ search_time_slot }}</strong></div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endif %}
+
+      {% elif not user.is_authenticated %}
+        <a href="{% url 'login' %}" class="sidebar-action-btn">
+          <i class="fas fa-sign-in-alt"></i> Login to Contact
+        </a>
+      {% endif %}
+    </div>
+
+  </aside>
+
+  <!-- ══════════════════════════════════
+       RIGHT — Main Content
+  ══════════════════════════════════ -->
+  <div class="profile-content">
+
+    <!-- About -->
+    {% if tutor.bio %}
+      <div class="profile-section">
+        <div class="profile-section-header">
+          <i class="fas fa-user"></i> About {{ tutor.full_name }}
+        </div>
+        <div class="profile-section-body">
+          <p class="bio-text">{{ tutor.bio }}</p>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Teaching Details -->
+    {% if grade_rates %}
+      <div class="profile-section">
+        <div class="profile-section-header">
+          <i class="fas fa-book"></i> Grades, Subjects &amp; Rates
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="grade-table">
+            <thead>
+              <tr>
+                <th>Grade</th>
+                <th>Subjects</th>
+                <th>Online</th>
+                <th>At Student's Home</th>
+                <th>At Tutor's Home</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for gr in grade_rates %}
+                <tr>
+                  <td class="grade-label-cell">{{ gr.get_grade_display }}</td>
+                  <td class="subjects-cell">{{ gr.subjects }}</td>
+                  <td class="rate-cell">{% if gr.rate_online %}₹{{ gr.rate_online }}/hr{% else %}—{% endif %}</td>
+                  <td class="rate-cell">{% if gr.rate_student_home %}₹{{ gr.rate_student_home }}/hr{% else %}—{% endif %}</td>
+                  <td class="rate-cell">{% if gr.rate_my_home %}₹{{ gr.rate_my_home }}/hr{% else %}—{% endif %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Teaching Mode + School Boards -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <i class="fas fa-chalkboard-teacher"></i> Teaching Details
+      </div>
+      <div class="profile-section-body" style="display:flex; flex-direction:column; gap:16px;">
+
+        {% if teaching_modes %}
+          <div>
+            <div style="font-size:0.78rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Teaching Mode</div>
+            <div class="chip-group">
+              {% if 'online' in tutor.teaching_mode %}
+                <span class="chip chip-primary"><i class="fas fa-laptop"></i> Online</span>
+              {% endif %}
+              {% if 'student_home' in tutor.teaching_mode %}
+                <span class="chip chip-success"><i class="fas fa-home"></i> At Student's Home</span>
+              {% endif %}
+              {% if 'my_home' in tutor.teaching_mode %}
+                <span class="chip chip-warning"><i class="fas fa-map-marker-alt"></i> At Tutor's Home</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if boards_list %}
+          <div>
+            <div style="font-size:0.78rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">School Boards</div>
+            <div class="chip-group">
+              {% for board in boards_list %}
+                <span class="chip chip-primary">{{ board }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if languages_list %}
+          <div>
+            <div style="font-size:0.78rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Languages</div>
+            <div class="chip-group">
+              {% for lang in languages_list %}
+                <span class="chip chip-primary"><i class="fas fa-language"></i> {{ lang }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <i class="fas fa-calendar-week"></i> Weekly Availability (Mon – Sat)
+      </div>
+      <div class="profile-section-body">
+        {% if slot_labels %}
+          <div class="slots-wrap">
+            {% for label in slot_labels %}
+              <span class="slot-chip"><i class="fas fa-clock"></i> {{ label }}</span>
+            {% endfor %}
+          </div>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-top:12px;">
+            <i class="fas fa-info-circle"></i> Sunday is off by default
+          </p>
+        {% else %}
+          <p style="color:var(--text-secondary); font-size:0.88rem;">Availability not set yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         REVIEWS & RATINGS
+    ══════════════════════════════════ -->
+    <div class="profile-section" id="reviews">
+      <div class="profile-section-header">
+        <i class="fas fa-star"></i> Reviews &amp; Ratings
+        {% if tutor.review_count %}
+          <span style="margin-left:auto; font-size:0.8rem; font-weight:600; color:var(--text-secondary);">
+            {{ tutor.review_count }} review{{ tutor.review_count|pluralize }}
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Rating Summary Bar -->
+      {% if tutor.review_count %}
+        <div class="review-summary">
+          <div class="review-big-score">
+            <div class="review-big-number">{{ tutor.avg_rating }}</div>
+            <div class="review-big-stars">
+              {% with r=tutor.avg_rating %}
+                {% for i in "12345" %}
+                  {% if forloop.counter <= r %}
+                    <i class="fas fa-star" style="color:#f59e0b;"></i>
+                  {% else %}
+                    <i class="far fa-star" style="color:#d1d5db;"></i>
+                  {% endif %}
+                {% endfor %}
+              {% endwith %}
+            </div>
+            <div class="review-big-count">out of 5</div>
+          </div>
+
+          <!-- Bar chart per star -->
+          <div class="review-bar-chart">
+            {% for star in "54321" %}
+              {% with star_int=star|add:"0" %}
+                {% with count=reviews|length %}
+                  <div class="bar-row">
+                    <span class="bar-label">{{ star }}</span>
+                    <i class="fas fa-star" style="color:#f59e0b; font-size:0.7rem;"></i>
+                    <div class="bar-track">
+                      <div class="bar-fill" style="width:{% widthratio reviews|length reviews|length 100 %}%;"></div>
+                    </div>
+                    <span class="bar-count">—</span>
+                  </div>
+                {% endwith %}
+              {% endwith %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- My Existing Review -->
+      {% if my_review %}
+        <div class="my-review-card">
+          <div style="flex:1;">
+            <div style="font-size:0.78rem; font-weight:700; color:var(--success); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+              <i class="fas fa-check-circle"></i> Your Review
+            </div>
+            <div class="my-review-stars">
+              {% for i in "12345" %}
+                {% if forloop.counter <= my_review.rating|add:"0" %}★{% else %}☆{% endif %}
+              {% endfor %}
+              <span style="font-size:0.82rem; color:var(--text-secondary); margin-left:6px;">{{ my_review.rating }}/5</span>
+            </div>
+            {% if my_review.comment %}
+              <div class="my-review-comment">{{ my_review.comment }}</div>
+            {% endif %}
+            <div class="my-review-date">{{ my_review.updated_at|date:"d M Y" }}</div>
+          </div>
+          <div class="review-action-btns">
+            <button class="btn-edit-review" onclick="toggleEditForm()">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <form method="post" action="{% url 'delete_review' tutor.id %}"
+                  onsubmit="return confirm('Delete your review?');">
+              {% csrf_token %}
+              <button type="submit" class="btn-delete-review">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Edit form (hidden by default) -->
+        <div class="edit-review-form" id="editReviewForm">
+          <div class="review-form-title"><i class="fas fa-edit"></i> Edit Your Review</div>
+          <form method="post" action="{% url 'submit_review' tutor.id %}">
+            {% csrf_token %}
+            <div class="star-rating-input">
+              {% for val in "54321" %}
+                <input type="radio" name="rating" id="edit_star{{ val }}" value="{{ val }}"
+                       {% if my_review.rating == val|add:"0" %}checked{% endif %}>
+                <label for="edit_star{{ val }}" title="{{ val }} stars">★</label>
+              {% endfor %}
+            </div>
+            <textarea name="comment" rows="3" class="form-control"
+                      placeholder="Update your review (optional)">{{ my_review.comment|default:'' }}</textarea>
+            <button type="submit" class="review-submit-btn">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </form>
+        </div>
+
+      <!-- New Review Form -->
+      {% elif can_review %}
+        <div class="review-form-card">
+          <div class="review-form-title">
+            <i class="fas fa-star"></i> Leave a Review
+          </div>
+          <form method="post" action="{% url 'submit_review' tutor.id %}">
+            {% csrf_token %}
+            <div style="margin-bottom:8px; font-size:0.82rem; font-weight:600; color:var(--text-secondary);">
+              Select your rating:
+            </div>
+            <div class="star-rating-input">
+              <input type="radio" name="rating" id="star5" value="5"><label for="star5" title="5 stars">★</label>
+              <input type="radio" name="rating" id="star4" value="4"><label for="star4" title="4 stars">★</label>
+              <input type="radio" name="rating" id="star3" value="3"><label for="star3" title="3 stars">★</label>
+              <input type="radio" name="rating" id="star2" value="2"><label for="star2" title="2 stars">★</label>
+              <input type="radio" name="rating" id="star1" value="1"><label for="star1" title="1 star">★</label>
+            </div>
+            <textarea name="comment" rows="3" class="form-control"
+                      placeholder="Share your experience with this tutor (optional)"></textarea>
+            <button type="submit" class="review-submit-btn">
+              <i class="fas fa-paper-plane"></i> Submit Review
+            </button>
+          </form>
+        </div>
+
+      {% elif user.is_authenticated and user.profile.role == 'student' %}
+        <div style="padding:16px 20px; background:var(--warning-bg); border-bottom:1px solid var(--warning-border);">
+          <div style="font-size:0.88rem; color:#92400e; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-lock"></i>
+            <span>You can only review tutors who have <strong>accepted your booking request</strong>.</span>
+          </div>
+        </div>
+
+      {% elif not user.is_authenticated %}
+        <div style="padding:16px 20px; background:var(--info-bg); border-bottom:1px solid var(--info-border);">
+          <div style="font-size:0.88rem; color:#1e40af; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-sign-in-alt"></i>
+            <span><a href="{% url 'login' %}" style="color:#1e40af; font-weight:700;">Login</a> to leave a review.</span>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Reviews List -->
+      {% if reviews %}
+        <div class="review-list">
+          {% for review in reviews %}
+            <div class="review-item">
+              <div class="reviewer-avatar">{{ review.student.full_name.0|upper }}</div>
+              <div class="review-body">
+                <div class="reviewer-name">{{ review.student.full_name }}</div>
+                <div class="review-stars">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                  {% endfor %}
+                  <span style="font-size:0.78rem; color:var(--text-secondary); margin-left:4px;">{{ review.rating }}/5</span>
+                </div>
+                {% if review.comment %}
+                  <div class="review-comment">{{ review.comment }}</div>
+                {% endif %}
+                <div class="review-date">{{ review.created_at|date:"d M Y" }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="no-reviews-state">
+          <i class="far fa-star"></i>
+          <div style="font-weight:700; margin-bottom:4px;">No reviews yet</div>
+          <div style="font-size:0.85rem;">Be the first to review {{ tutor.full_name }}!</div>
+        </div>
+      {% endif %}
+
+    </div><!-- /reviews section -->
+
+  </div><!-- /profile-content -->
+
+</div><!-- /profile-page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleEditForm() {
+    var form = document.getElementById('editReviewForm');
+    form.classList.toggle('open');
+  }
+</script>
+{% endblock %}

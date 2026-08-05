@@ -1,0 +1,256 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}Student Requests — TutorGali{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tutor_booking_requests.css' %}">
+<style>
+  .time-chip {
+    display: inline-flex; align-items: center;
+    padding: 4px 10px; border-radius: 999px;
+    background: #eef2ff; color: #4338ca;
+    font-weight: 700; font-size: 0.82rem;
+  }
+  .mobile-value { color: var(--text-primary); font-weight: 800; }
+  .link-subscription { color: var(--primary); font-weight: 700; text-decoration: none; }
+  .link-subscription:hover { text-decoration: underline; }
+  .subscription-gate {
+    margin-top: 8px; padding: 20px; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 1px solid #bae6fd; text-align: center;
+  }
+  .subscription-gate p { margin: 0 0 12px; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
+  .btn-get-subscription {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: #fff; font-weight: 700; font-size: 0.95rem; text-decoration: none;
+    box-shadow: 0 8px 20px rgba(34,197,94,0.25); transition: var(--transition);
+  }
+  .btn-get-subscription:hover { transform: translateY(-1px); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="requests-container">
+
+  <!-- Hero -->
+  <div class="requests-hero">
+    <h2 class="requests-title"><i class="fas fa-user-clock"></i> Student Requests</h2>
+    <p class="requests-subtitle">Review incoming student booking requests and accept or reject them.</p>
+  </div>
+
+  <!-- Free Contact Quota Banner -->
+  {% if not has_active_subscription %}
+    {% if free_contacts_remaining > 0 %}
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+                  padding:14px 20px; background:var(--gradient-soft); border:1.5px solid rgba(102,126,234,0.25);
+                  border-radius:var(--radius-md); margin-bottom:20px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; background:var(--gradient); border-radius:50%;
+                      display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; flex-shrink:0;">
+            <i class="fas fa-gift"></i>
+          </div>
+          <div>
+            <div style="font-size:0.92rem; font-weight:700; color:var(--text-primary);">
+              🎉 You have <strong style="color:var(--primary);">{{ free_contacts_remaining }} free contact{{ free_contacts_remaining|pluralize }}</strong> remaining
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">
+              Accept student requests to use your free contacts. After 5, a subscription is required.
+            </div>
+          </div>
+        </div>
+        <!-- Progress bar -->
+        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+          {% for i in "12345" %}
+            <div style="width:12px; height:12px; border-radius:50%;
+                        background:{% if forloop.counter <= profile.free_contacts_used %}var(--primary){% else %}var(--border){% endif %};
+                        border:2px solid {% if forloop.counter <= profile.free_contacts_used %}var(--primary){% else %}var(--border){% endif %};">
+            </div>
+          {% endfor %}
+          <span style="font-size:0.78rem; color:var(--text-secondary); margin-left:4px;">
+            {{ profile.free_contacts_used }}/5 used
+          </span>
+        </div>
+      </div>
+    {% else %}
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+                  padding:14px 20px; background:var(--warning-bg); border:1.5px solid var(--warning-border);
+                  border-radius:var(--radius-md); margin-bottom:20px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; background:#f59e0b; border-radius:50%;
+                      display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; flex-shrink:0;">
+            <i class="fas fa-lock"></i>
+          </div>
+          <div>
+            <div style="font-size:0.92rem; font-weight:700; color:#92400e;">
+              Free contacts used up (5/5)
+            </div>
+            <div style="font-size:0.8rem; color:#92400e; margin-top:2px;">
+              Subscribe to keep accepting students and viewing their contact details.
+            </div>
+          </div>
+        </div>
+        <a href="{% url 'subscription_plans' %}"
+           style="display:inline-flex; align-items:center; gap:7px; padding:9px 18px;
+                  background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; border-radius:var(--radius-sm);
+                  font-size:0.88rem; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(34,197,94,0.25);">
+          <i class="fas fa-crown"></i> Get Subscription
+        </a>
+      </div>
+    {% endif %}
+  {% else %}
+    <div style="display:flex; align-items:center; gap:10px; padding:12px 18px;
+                background:var(--success-bg); border:1px solid var(--success-border);
+                border-radius:var(--radius-md); margin-bottom:20px; font-size:0.88rem; font-weight:600; color:#065f46;">
+      <i class="fas fa-crown" style="color:#16a34a;"></i>
+      Active subscription — unlimited student contacts
+    </div>
+  {% endif %}
+
+  {% if incoming_requests %}
+    <div class="requests-grid">
+      {% for req in incoming_requests %}
+        <div class="request-card">
+
+          <!-- Top: name + status -->
+          <div class="request-card-top">
+            <div>
+              <h5 class="student-name">{{ req.student.full_name|default:req.student.user.username }}</h5>
+              <div class="request-date"><i class="fas fa-calendar-alt"></i> {{ req.created_at|date:"d M Y, H:i" }}</div>
+            </div>
+            <div>
+              {% if req.status == 'pending' %}
+                <span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>
+              {% elif req.status == 'accepted' %}
+                <span class="status-badge status-accepted"><i class="fas fa-check-circle"></i> Accepted</span>
+              {% elif req.status == 'rejected' %}
+                <span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> Rejected</span>
+              {% else %}
+                <span class="status-badge status-default">{{ req.get_status_display }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="request-details">
+            {% if req.subject %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-book"></i> Subject</span>
+                <span class="request-value">{{ req.subject|title }}</span>
+              </div>
+            {% endif %}
+            {% if req.grade %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-layer-group"></i> Grade</span>
+                <span class="request-value">{{ req.grade|cut:"grade_"|cut:"nursery_to_"|title }}</span>
+              </div>
+            {% endif %}
+            {% if req.time_slot %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-clock"></i> Time Slot</span>
+                <span class="request-value"><span class="time-chip">{{ req.time_slot }}</span></span>
+              </div>
+            {% endif %}
+            {% if req.mode %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-chalkboard"></i> Mode</span>
+                <span class="request-value">
+                  {% if req.mode == 'online' %}<i class="fas fa-laptop" style="color:var(--primary);"></i> Online
+                  {% elif req.mode == 'student_home' %}<i class="fas fa-home" style="color:var(--success);"></i> At Student's Home
+                  {% elif req.mode == 'my_home' %}<i class="fas fa-map-marker-alt" style="color:var(--warning);"></i> At Tutor's Home
+                  {% else %}{{ req.mode }}{% endif %}
+                </span>
+              </div>
+            {% endif %}
+            {% if req.price %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-rupee-sign"></i> Rate</span>
+                <span class="request-value" style="font-weight:700; color:var(--primary);">₹{{ req.price }}/hr</span>
+              </div>
+            {% endif %}
+            {% if req.student.mobile_number and can_view_contact %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-mobile-alt"></i> Mobile</span>
+                <span class="request-value mobile-value">{{ req.student.mobile_number }}</span>
+              </div>
+            {% elif req.student.mobile_number %}
+              <div class="request-line">
+                <span class="request-label"><i class="fas fa-mobile-alt"></i> Mobile</span>
+                <span class="request-value">
+                  <a href="{% url 'subscription_plans' %}" class="link-subscription">
+                    <i class="fas fa-lock"></i> Subscribe to view
+                  </a>
+                </span>
+              </div>
+            {% endif %}
+            {% if req.message %}
+              <div class="request-message-box">
+                <div class="request-message-title">Message from Student</div>
+                <div class="request-message-text">{{ req.message }}</div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Actions -->
+          <div class="request-actions">
+            {% if req.status == 'pending' %}
+              <div class="request-btn-row">
+                <form method="post" action="{% url 'update_booking_request_status' req.id 'accept' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-request btn-accept">
+                    <i class="fas fa-check"></i> Accept
+                  </button>
+                </form>
+                <form method="post" action="{% url 'update_booking_request_status' req.id 'reject' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-request btn-reject">
+                    <i class="fas fa-times"></i> Reject
+                  </button>
+                </form>
+              </div>
+
+            {% elif req.status == 'accepted' %}
+              {% if req.student.mobile_number and can_view_contact %}
+                <div class="accepted-action-row">
+                  <a href="tel:{{ req.student.mobile_number }}" class="btn-request btn-call">
+                    <i class="fas fa-phone-alt"></i> Call Student
+                  </a>
+                  <a href="https://wa.me/91{{ req.student.mobile_number }}" target="_blank" rel="noopener noreferrer" class="btn-request btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                  </a>
+                </div>
+              {% elif req.student.mobile_number %}
+                <div class="subscription-gate">
+                  <p>You've used all 5 free contacts. Subscribe to contact more students.</p>
+                  <a href="{% url 'subscription_plans' %}" class="btn-get-subscription">
+                    <i class="fas fa-crown"></i> Get Subscription
+                  </a>
+                </div>
+              {% else %}
+                <div class="request-info-box">Student number not available</div>
+              {% endif %}
+
+            {% elif req.status == 'rejected' %}
+              <div class="request-info-box request-info-rejected">
+                <i class="fas fa-info-circle"></i> No further action required
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div style="display:flex; justify-content:center; padding:20px 0;">
+      <div class="empty-request-card">
+        <i class="fas fa-inbox" style="font-size:2.5rem; color:var(--border); margin-bottom:16px; display:block;"></i>
+        <p class="empty-request-title">No student requests yet</p>
+        <p class="empty-request-text">Once students contact you from search results, their requests will appear here.</p>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

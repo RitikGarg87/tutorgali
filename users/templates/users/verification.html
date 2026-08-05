@@ -1,0 +1,120 @@
+{% extends 'users/base.html' %}
+{% block title %}Document Verification — TutorGali{% endblock %}
+
+{% block content %}
+<div class="page-wrapper-sm">
+
+  <!-- Page Hero -->
+  <div class="page-hero" style="text-align:center; margin-bottom:24px;">
+    <h2><i class="fas fa-certificate" style="margin-right:8px;"></i>Document Verification</h2>
+    <p>Upload your documents to become a verified tutor and earn student trust.</p>
+  </div>
+
+  <!-- Verification Status -->
+  <div class="card mb-3">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem;
+        {% if profile.verification_status == 'approved' %}background:var(--success-bg); color:var(--success);
+        {% elif profile.verification_status == 'rejected' %}background:var(--danger-bg); color:var(--danger);
+        {% else %}background:var(--warning-bg); color:var(--warning);{% endif %}">
+        {% if profile.verification_status == 'approved' %}<i class="fas fa-check-circle"></i>
+        {% elif profile.verification_status == 'rejected' %}<i class="fas fa-times-circle"></i>
+        {% else %}<i class="fas fa-clock"></i>{% endif %}
+      </div>
+      <div>
+        <div style="font-size:0.78rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Verification Status</div>
+        <div style="font-size:1.05rem; font-weight:700;
+          {% if profile.verification_status == 'approved' %}color:var(--success);
+          {% elif profile.verification_status == 'rejected' %}color:var(--danger);
+          {% else %}color:var(--warning);{% endif %}">
+          {% if profile.verification_status == 'approved' %}Approved ✓
+          {% elif profile.verification_status == 'rejected' %}Rejected
+          {% else %}Pending Review{% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if profile.verification_status == 'rejected' and profile.verification_notes %}
+      <div class="alert alert-error mt-2">
+        <i class="fas fa-exclamation-circle"></i>
+        <span><strong>Rejection Reason:</strong> {{ profile.verification_notes }}</span>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if profile.verification_status == 'approved' %}
+    <!-- Approved State -->
+    <div class="card" style="text-align:center; padding:48px 24px;">
+      <i class="fas fa-award" style="font-size:4rem; color:var(--success); margin-bottom:16px; display:block;"></i>
+      <h2 style="font-weight:800; margin-bottom:8px; color:var(--success);">You are Verified!</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px;">Your documents have been approved by the admin. Students can see your verified badge.</p>
+      <a href="{% url 'tutor_dashboard' %}" class="btn btn-primary">
+        <i class="fas fa-th-large"></i> Go to Dashboard
+      </a>
+    </div>
+
+  {% else %}
+    <!-- Upload Form -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-upload"></i> Upload Documents</div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Education Certificate -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-graduation-cap"></i> Education Certificate *
+          </label>
+          <div style="border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 20px; background: var(--bg-input); transition: var(--transition);">
+            {{ form.education_certificate }}
+            <div class="form-hint" style="margin-top:8px;">
+              <i class="fas fa-info-circle"></i> Upload your degree/diploma certificate (PDF, JPG, PNG — Max 5MB)
+            </div>
+          </div>
+          {% if profile.education_certificate %}
+            <div style="margin-top:8px; display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--success);">
+              <i class="fas fa-check-circle"></i>
+              Current file: <a href="{{ profile.education_certificate.url }}" target="_blank" rel="noopener noreferrer" style="color:var(--success); font-weight:600;">View Document</a>
+            </div>
+          {% endif %}
+          {{ form.education_certificate.errors }}
+        </div>
+
+        <!-- ID Proof -->
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-id-card"></i> ID Proof *
+          </label>
+          <div style="border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 20px; background: var(--bg-input);">
+            {{ form.id_proof }}
+            <div class="form-hint" style="margin-top:8px;">
+              <i class="fas fa-info-circle"></i> Upload government-issued ID (Aadhaar, PAN, Passport — PDF, JPG, PNG — Max 5MB)
+            </div>
+          </div>
+          {% if profile.id_proof %}
+            <div style="margin-top:8px; display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--success);">
+              <i class="fas fa-check-circle"></i>
+              Current file: <a href="{{ profile.id_proof.url }}" target="_blank" rel="noopener noreferrer" style="color:var(--success); font-weight:600;">View Document</a>
+            </div>
+          {% endif %}
+          {{ form.id_proof.errors }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg">
+          <i class="fas fa-upload"></i> Submit for Verification
+        </button>
+      </form>
+    </div>
+  {% endif %}
+
+  <div class="text-center mt-3">
+    <a href="{% url 'tutor_dashboard' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+
+</div>
+{% endblock %}

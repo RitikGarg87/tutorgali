@@ -1,0 +1,162 @@
+{% extends 'users/base.html' %}
+{% block title %}Login — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: var(--bg-page); }
+  .auth-page {
+    min-height: calc(100vh - 68px);
+    display: flex;
+    align-items: stretch;
+  }
+  .auth-brand {
+    flex: 1;
+    background: var(--gradient);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 48px;
+    color: #fff;
+    text-align: center;
+  }
+  .auth-brand-icon {
+    width: 90px; height: 90px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem;
+    margin-bottom: 28px;
+  }
+  .auth-brand h2 { font-size: 2rem; font-weight: 800; margin-bottom: 14px; line-height: 1.2; }
+  .auth-brand p  { font-size: 1rem; opacity: 0.88; line-height: 1.7; max-width: 320px; }
+  .auth-brand-features { margin-top: 36px; display: flex; flex-direction: column; gap: 14px; text-align: left; width: 100%; max-width: 300px; }
+  .auth-brand-feature  { display: flex; align-items: center; gap: 12px; font-size: 0.92rem; opacity: 0.92; }
+  .auth-brand-feature i { width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; }
+  .auth-form-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 40px; background: var(--bg-page); }
+  .auth-form-box { width: 100%; max-width: 420px; }
+  .auth-form-header { margin-bottom: 28px; }
+  .auth-form-header h1 { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; }
+  .auth-form-header p  { color: var(--text-secondary); font-size: 0.93rem; }
+  .auth-card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-md); padding: 36px; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; margin-bottom: 7px; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+  .form-group label i { color: var(--primary); margin-right: 5px; }
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"] {
+    width: 100%; padding: 12px 16px;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 0.93rem; color: var(--text-primary);
+    background: var(--bg-input); transition: var(--transition); min-height: 46px;
+  }
+  .form-group input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+  .form-group input::placeholder { color: var(--text-muted); }
+  .field-error { margin-top: 5px; font-size: 0.8rem; color: var(--danger); display: flex; align-items: center; gap: 4px; }
+  .remember-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
+  .remember-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 500; color: var(--text-primary); user-select: none; }
+  .remember-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+  .forgot-link { font-size: 0.85rem; color: var(--primary); font-weight: 600; text-decoration: none; }
+  .forgot-link:hover { text-decoration: underline; }
+  .btn-login {
+    width: 100%; padding: 13px;
+    background: var(--gradient); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-primary);
+    min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-login:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(102,126,234,0.38); }
+  .auth-footer { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--text-secondary); }
+  .auth-footer a { color: var(--primary); font-weight: 700; }
+  @media (max-width: 768px) {
+    .auth-page { flex-direction: column; }
+    .auth-brand { padding: 36px 24px; }
+    .auth-brand h2 { font-size: 1.5rem; }
+    .auth-brand-features { display: none; }
+    .auth-form-panel { padding: 28px 16px 40px; }
+    .auth-card { padding: 24px 20px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+  <!-- Left: Brand Panel -->
+  <div class="auth-brand">
+    <div class="auth-brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <h2>Welcome Back to TutorGali</h2>
+    <p>India's trusted platform connecting students with verified, experienced tutors near you.</p>
+    <div class="auth-brand-features">
+      <div class="auth-brand-feature"><i class="fas fa-map-marker-alt"></i><span>Find tutors within your locality</span></div>
+      <div class="auth-brand-feature"><i class="fas fa-shield-alt"></i><span>Verified & background-checked tutors</span></div>
+      <div class="auth-brand-feature"><i class="fas fa-rupee-sign"></i><span>Transparent pricing, no hidden fees</span></div>
+      <div class="auth-brand-feature"><i class="fas fa-mobile-alt"></i><span>Direct contact via call & WhatsApp</span></div>
+    </div>
+  </div>
+
+  <!-- Right: Form Panel -->
+  <div class="auth-form-panel">
+    <div class="auth-form-box">
+      <div class="auth-form-header">
+        <h1>Sign in to your account</h1>
+        <p>Enter your credentials to continue</p>
+      </div>
+
+      <div class="auth-card">
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ form.non_field_errors.0 }}</span>
+          </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">
+              <i class="fas fa-envelope"></i> Email or Mobile Number
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">
+              <i class="fas fa-lock"></i> Password
+            </label>
+            {{ form.password }}
+            {% if form.password.errors %}
+              <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.password.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="remember-row">
+            <label class="remember-label">
+              <input type="checkbox" name="remember" id="remember-checkbox">
+              Remember me for 2 weeks
+            </label>
+            <a href="{% url 'password_reset' %}" class="forgot-link">
+              <i class="fas fa-key"></i> Forgot password?
+            </a>
+          </div>
+
+          <button type="submit" class="btn-login">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </button>
+        </form>
+
+        <div class="divider"><span>OR</span></div>
+
+        <div class="auth-footer">
+          Don't have an account? <a href="{% url 'register' %}">Create one free</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends 'users/base.html' %}
+{% block title %}Find Tutors — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .gps-btn {
+    width: 100%; padding: 14px 20px;
+    background: var(--gradient-soft); color: var(--primary);
+    border: 2px solid rgba(102,126,234,0.3); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 52px;
+  }
+  .gps-btn:hover { background: var(--gradient); color: #fff; border-color: var(--primary); }
+  .gps-btn.success { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .gps-status { font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .search-submit-row { display: flex; align-items: center; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+  .btn-search {
+    padding: 14px 32px; background: var(--gradient); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-primary);
+    display: flex; align-items: center; gap: 8px; min-height: 52px;
+  }
+  .btn-search:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); }
+  .btn-search:disabled { opacity: 0.45; cursor: not-allowed; }
+  #location-status { font-size: 0.88rem; color: var(--text-secondary); }
+  @media (max-width: 600px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .search-submit-row { flex-direction: column; align-items: stretch; }
+    .btn-search { justify-content: center; }
+  }
+  @media (max-width: 400px) {
+    .filter-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper-md">
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <h2><i class="fas fa-search-location" style="margin-right:10px;"></i>Find Tutors Near You</h2>
+    <p>Allow location access and choose your preferences. We'll show verified tutors near you who match your grade, subject, mode and time slot.</p>
+  </div>
+
+  <div class="card card-lg">
+    <form id="search-form" method="get" action="{% url 'search_tutors' %}">
+
+      <!-- Filter Grid -->
+      <div class="filter-grid">
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-layer-group"></i> Grade</label>
+          <select name="grade" class="form-control" required>
+            <option value="">Select Grade</option>
+            <option value="nursery_to_5">Nursery to 5th</option>
+            <option value="grade_6">6th</option>
+            <option value="grade_7">7th</option>
+            <option value="grade_8">8th</option>
+            <option value="grade_9">9th</option>
+            <option value="grade_10">10th</option>
+            <option value="grade_11">11th</option>
+            <option value="grade_12">12th</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-book"></i> Subject</label>
+          <input type="text" name="subject" class="form-control" placeholder="e.g. Math, Physics">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-chalkboard"></i> Teaching Mode</label>
+          <select name="mode" class="form-control">
+            <option value="">Any Mode</option>
+            <option value="online">Online</option>
+            <option value="student_home">At Student's Home</option>
+            <option value="my_home">At Tutor's Home</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-clock"></i> Preferred Time Slot</label>
+          <select name="time_slot" class="form-control">
+            <option value="">Any Time</option>
+            <option value="04:00-05:00">04:00 AM – 05:00 AM</option>
+            <option value="05:00-06:00">05:00 AM – 06:00 AM</option>
+            <option value="06:00-07:00">06:00 AM – 07:00 AM</option>
+            <option value="07:00-08:00">07:00 AM – 08:00 AM</option>
+            <option value="08:00-09:00">08:00 AM – 09:00 AM</option>
+            <option value="09:00-10:00">09:00 AM – 10:00 AM</option>
+            <option value="10:00-11:00">10:00 AM – 11:00 AM</option>
+            <option value="11:00-12:00">11:00 AM – 12:00 PM</option>
+            <option value="12:00-13:00">12:00 PM – 01:00 PM</option>
+            <option value="13:00-14:00">01:00 PM – 02:00 PM</option>
+            <option value="14:00-15:00">02:00 PM – 03:00 PM</option>
+            <option value="15:00-16:00">03:00 PM – 04:00 PM</option>
+            <option value="16:00-17:00">04:00 PM – 05:00 PM</option>
+            <option value="17:00-18:00">05:00 PM – 06:00 PM</option>
+            <option value="18:00-19:00">06:00 PM – 07:00 PM</option>
+            <option value="19:00-20:00">07:00 PM – 08:00 PM</option>
+            <option value="20:00-21:00">08:00 PM – 09:00 PM</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-ruler"></i> Distance</label>
+          <select name="distance_km" class="form-control" required>
+            <option value="1">Within 1 km</option>
+            <option value="2">Within 2 km</option>
+            <option value="3">Within 3 km</option>
+            <option value="4">Within 4 km</option>
+            <option value="5" selected>Within 5 km</option>
+            <option value="6">Within 6 km</option>
+            <option value="7">Within 7 km</option>
+            <option value="8">Within 8 km</option>
+            <option value="9">Within 9 km</option>
+            <option value="10">Within 10 km</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Locality Input -->
+      <div class="form-group mt-2">
+        <label class="form-label"><i class="fas fa-map-marker-alt"></i> Your Locality</label>
+        <input type="text" id="student-locality" name="student_locality" class="form-control" placeholder="e.g. Patel Nagar, New Delhi">
+      </div>
+
+      <!-- GPS Button -->
+      <div class="form-group">
+        <button type="button" onclick="pickCurrentLocation()" class="gps-btn" id="gps-btn">
+          <i class="fas fa-location-arrow"></i> Pick My Current Location
+        </button>
+        <div class="gps-status" id="gps-status">
+          <i class="fas fa-info-circle"></i> Click to auto-detect your location
+        </div>
+      </div>
+
+      <!-- Hidden coords -->
+      <input type="hidden" name="lat" id="lat">
+      <input type="hidden" name="lng" id="lng">
+
+      <!-- Submit -->
+      <div class="search-submit-row">
+        <button type="submit" class="btn-search" id="submit-btn" disabled>
+          <i class="fas fa-search"></i> Search Tutors Near Me
+        </button>
+        <span id="location-status"></span>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<!-- Google Maps API -->
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initMap">
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var autocomplete, geocoder;
+
+function initMap() {
+  var input = document.getElementById('student-locality');
+  geocoder = new google.maps.Geocoder();
+  autocomplete = new google.maps.places.Autocomplete(input, {
+    types: ['geocode'],
+    componentRestrictions: { country: 'in' }
+  });
+  autocomplete.addListener('place_changed', function () {
+    var place = autocomplete.getPlace();
+    if (!place.geometry) return;
+    document.getElementById('lat').value = place.geometry.location.lat();
+    document.getElementById('lng').value = place.geometry.location.lng();
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('location-status').textContent = '✓ Location set';
+  });
+}
+
+function pickCurrentLocation() {
+  var btn = document.getElementById('gps-btn');
+  var status = document.getElementById('gps-status');
+  if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting…';
+  status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting your location…';
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+      reverseGeocode(lat, lng);
+    },
+    function () {
+      btn.innerHTML = '<i class="fas fa-location-arrow"></i> Pick My Current Location';
+      status.innerHTML = '<i class="fas fa-exclamation-circle"></i> Location access denied. Enter manually.';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function reverseGeocode(lat, lng) {
+  var btn = document.getElementById('gps-btn');
+  var status = document.getElementById('gps-status');
+  geocoder.geocode({ location: { lat: lat, lng: lng } }, function (results, statusCode) {
+    if (statusCode === 'OK' && results[0]) {
+      var locality = results[0].address_components.find(function(c) {
+        return c.types.includes('sublocality') || c.types.includes('locality');
+      });
+      document.getElementById('student-locality').value = locality ? locality.long_name : results[0].formatted_address;
+      document.getElementById('submit-btn').disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> Location Detected — Re-pick';
+      btn.classList.add('success');
+      status.innerHTML = '<i class="fas fa-map-marker-alt"></i> Location detected successfully';
+      document.getElementById('location-status').textContent = '✓ Location set';
+    } else {
+      resetGpsButton();
+      alert('Unable to detect address. Please enter manually.');
+    }
+  });
+}
+
+function resetGpsButton() {
+  var btn = document.getElementById('gps-btn');
+  var status = document.getElementById('gps-status');
+  btn.disabled = false;
+  btn.classList.remove('success');
+  btn.innerHTML = '<i class="fas fa-location-arrow"></i> Pick My Current Location';
+  status.innerHTML = '<i class="fas fa-info-circle"></i> Click to auto-detect your location';
+}
+</script>
+{% endblock %}

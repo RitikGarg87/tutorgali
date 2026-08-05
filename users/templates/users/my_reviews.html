@@ -1,0 +1,223 @@
+{% extends 'users/base.html' %}
+{% block title %}My Reviews — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  .review-page { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* Summary card */
+  .rating-summary {
+    background: var(--gradient);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-primary);
+    color: #fff;
+  }
+
+  .big-score {
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .big-number {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+  }
+
+  .big-stars { font-size: 1.3rem; letter-spacing: 3px; margin: 6px 0 4px; color: #fde68a; }
+  .big-label { font-size: 0.82rem; opacity: 0.85; }
+
+  /* Bar chart */
+  .bar-chart { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 7px; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; }
+  .bar-star { width: 16px; font-weight: 700; text-align: right; color: #fde68a; }
+  .bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.2); border-radius: 999px; overflow: hidden; }
+  .bar-fill  { height: 100%; background: #fde68a; border-radius: 999px; transition: width 0.6s ease; }
+  .bar-count { width: 24px; font-weight: 700; opacity: 0.9; }
+
+  .summary-total {
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .summary-total-num { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+  .summary-total-label { font-size: 0.82rem; opacity: 0.85; margin-top: 4px; }
+
+  /* Review cards */
+  .review-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-xs);
+    display: flex;
+    gap: 16px;
+    transition: var(--transition);
+  }
+
+  .review-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+
+  .reviewer-avatar {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--gradient); color: #fff;
+    font-size: 1.1rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .review-body { flex: 1; }
+
+  .review-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; flex-wrap: wrap;
+    gap: 8px; margin-bottom: 8px;
+  }
+
+  .reviewer-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+  .reviewer-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  .star-display { color: #f59e0b; font-size: 1rem; letter-spacing: 2px; }
+  .star-num { font-size: 0.78rem; color: var(--text-secondary); margin-left: 4px; }
+
+  .review-comment {
+    font-size: 0.88rem; color: var(--text-primary);
+    line-height: 1.65; margin-top: 6px;
+    padding: 10px 14px;
+    background: var(--bg-page);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+  }
+
+  .no-reviews {
+    text-align: center; padding: 60px 24px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-xs);
+  }
+
+  @media (max-width: 600px) {
+    .rating-summary { flex-direction: column; gap: 20px; }
+    .big-number { font-size: 3rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-page">
+
+  <!-- Page Header -->
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+    <div>
+      <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-primary); margin-bottom:4px;">
+        <i class="fas fa-star" style="color:#f59e0b;"></i> My Reviews
+      </h2>
+      <p style="color:var(--text-secondary); font-size:0.88rem; margin:0;">
+        What students are saying about you
+      </p>
+    </div>
+    <a href="{% url 'tutor_dashboard' %}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+
+  {% if reviews %}
+
+    <!-- Rating Summary -->
+    <div class="rating-summary">
+
+      <!-- Big Score -->
+      <div class="big-score">
+        <div class="big-number">{{ profile.avg_rating|default:"—" }}</div>
+        <div class="big-stars">
+          {% if profile.avg_rating %}
+            {% for i in "12345" %}
+              {% if forloop.counter <= profile.avg_rating %}★{% else %}☆{% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+        <div class="big-label">Average Rating</div>
+      </div>
+
+      <!-- Bar Chart -->
+      <div class="bar-chart">
+        {% for star in "54321" %}
+          {% with s=star|add:"0" %}
+            <div class="bar-row">
+              <span class="bar-star">{{ star }}★</span>
+              <div class="bar-track">
+                <div class="bar-fill"
+                     style="width:{% if profile.review_count %}{% widthratio breakdown|default:0 profile.review_count 100 %}{% else %}0{% endif %}%;">
+                </div>
+              </div>
+              <span class="bar-count">{{ breakdown|default:0 }}</span>
+            </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+
+      <!-- Total -->
+      <div class="summary-total">
+        <div class="summary-total-num">{{ profile.review_count }}</div>
+        <div class="summary-total-label">Total Review{{ profile.review_count|pluralize }}</div>
+      </div>
+
+    </div>
+
+    <!-- Review List -->
+    {% for review in reviews %}
+      <div class="review-card">
+        <div class="reviewer-avatar">{{ review.student.full_name.0|upper }}</div>
+        <div class="review-body">
+          <div class="review-top">
+            <div>
+              <div class="reviewer-name">{{ review.student.full_name }}</div>
+              <div class="reviewer-date">
+                <i class="fas fa-calendar-alt"></i> {{ review.created_at|date:"d M Y" }}
+                {% if review.updated_at != review.created_at %}
+                  · <span style="font-style:italic;">edited {{ review.updated_at|date:"d M Y" }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div>
+              <span class="star-display">
+                {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+              </span>
+              <span class="star-num">{{ review.rating }}/5</span>
+            </div>
+          </div>
+          {% if review.comment %}
+            <div class="review-comment">{{ review.comment }}</div>
+          {% else %}
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; font-style:italic;">
+              No written comment.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+
+  {% else %}
+
+    <!-- Empty State -->
+    <div class="no-reviews">
+      <i class="far fa-star" style="font-size:3.5rem; color:var(--border); margin-bottom:16px; display:block;"></i>
+      <h3 style="font-weight:800; margin-bottom:8px; color:var(--text-primary);">No reviews yet</h3>
+      <p style="color:var(--text-secondary); font-size:0.92rem; max-width:360px; margin:0 auto 20px;">
+        Students can leave a review after you accept their booking request. Keep teaching and reviews will come!
+      </p>
+      <a href="{% url 'tutor_booking_requests' %}" class="btn btn-primary">
+        <i class="fas fa-inbox"></i> View Student Requests
+      </a>
+    </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Subscriptions{% endblock %}
+{% block page_title %}Subscriptions & Revenue{% endblock %}
+{% block nav_subscriptions %}active{% endblock %}
+
+{% block content %}
+
+<!-- Revenue Stats -->
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:24px;">
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#d1fae5; color:#059669;"><i class="fas fa-rupee-sign"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">₹{{ total_revenue_inr }}</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#dbeafe; color:#1d4ed8;"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{ paid_count }}</div>
+      <div class="stat-label">Paid Payments</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#fee2e2; color:#dc2626;"><i class="fas fa-times-circle"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{ failed_count }}</div>
+      <div class="stat-label">Failed Payments</div>
+    </div>
+  </div>
+</div>
+
+<!-- Active Subscriptions -->
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header"><i class="fas fa-crown"></i> Active Subscriptions ({{ subs_page_obj.paginator.count }})</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tutor</th><th>Plan</th><th>Start Date</th><th>End Date</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for sub in active_subs %}
+          <tr>
+            <td style="font-weight:600;">{{ sub.tutor.full_name }}</td>
+            <td>{{ sub.plan.name }} ({{ sub.plan.duration_months }} month{{ sub.plan.duration_months|pluralize }})</td>
+            <td>{{ sub.start_date|date:"d M Y" }}</td>
+            <td>{{ sub.end_date|date:"d M Y" }}</td>
+            <td><span class="badge badge-success"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Active</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">No active subscriptions.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if subs_page_obj.has_other_pages %}
+  <div class="pagination-wrap">
+    {% if subs_page_obj.has_previous %}
+      <a href="?subs_page={{ subs_page_obj.previous_page_number }}" class="page-btn">‹ Prev</a>
+    {% endif %}
+    {% for num in subs_page_obj.paginator.page_range %}
+      {% if subs_page_obj.number == num %}
+        <span class="page-btn active">{{ num }}</span>
+      {% elif num >= subs_page_obj.number|add:"-2" and num <= subs_page_obj.number|add:"2" %}
+        <a href="?subs_page={{ num }}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if subs_page_obj.has_next %}
+      <a href="?subs_page={{ subs_page_obj.next_page_number }}" class="page-btn">Next ›</a>
+    {% endif %}
+    <span class="page-info">Page {{ subs_page_obj.number }} of {{ subs_page_obj.paginator.num_pages }}</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- All Payments -->
+<div class="card">
+  <div class="card-header"><i class="fas fa-receipt"></i> All Payments</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tutor</th><th>Plan</th><th>Amount</th><th>Status</th><th>Razorpay Order</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+          <tr>
+            <td style="font-weight:600;">{{ p.tutor.full_name }}</td>
+            <td>{{ p.plan.name }}</td>
+            <td style="font-weight:700; color:var(--primary);">₹{{ p.amount|floatformat:0 | divisibleby:100 }}
+              {# amount is in paise #}
+              ₹{% widthratio p.amount 100 1 %}
+            </td>
+            <td>
+              {% if p.status == 'paid' %}<span class="badge badge-success">Paid</span>
+              {% elif p.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+              {% else %}<span class="badge badge-warning">Created</span>{% endif %}
+            </td>
+            <td style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">{{ p.razorpay_order_id|default:"—"|truncatechars:20 }}</td>
+            <td style="color:var(--text-muted); font-size:0.8rem; white-space:nowrap;">{{ p.created_at|date:"d M Y" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No payments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if payments_page_obj.has_other_pages %}
+  <div class="pagination-wrap">
+    {% if payments_page_obj.has_previous %}
+      <a href="?payments_page={{ payments_page_obj.previous_page_number }}" class="page-btn">‹ Prev</a>
+    {% endif %}
+    {% for num in payments_page_obj.paginator.page_range %}
+      {% if payments_page_obj.number == num %}
+        <span class="page-btn active">{{ num }}</span>
+      {% elif num >= payments_page_obj.number|add:"-2" and num <= payments_page_obj.number|add:"2" %}
+        <a href="?payments_page={{ num }}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if payments_page_obj.has_next %}
+      <a href="?payments_page={{ payments_page_obj.next_page_number }}" class="page-btn">Next ›</a>
+    {% endif %}
+    <span class="page-info">Page {{ payments_page_obj.number }} of {{ payments_page_obj.paginator.num_pages }}</span>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

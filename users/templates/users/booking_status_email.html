@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header-accepted { background-color: #16a34a; padding: 24px 32px; }
+    .header-rejected { background-color: #dc2626; padding: 24px 32px; }
+    .header-accepted h1, .header-rejected h1 { color: #ffffff; margin: 0; font-size: 22px; }
+    .body { padding: 32px; color: #333333; }
+    .body p { margin: 0 0 16px; line-height: 1.6; }
+    .detail-box { border-radius: 4px; padding: 16px 20px; margin: 20px 0; }
+    .detail-box-accepted { background: #f0fdf4; border-left: 4px solid #16a34a; }
+    .detail-box-rejected { background: #fff1f2; border-left: 4px solid #dc2626; }
+    .detail-box table { width: 100%; border-collapse: collapse; }
+    .detail-box td { padding: 6px 0; font-size: 14px; color: #444; }
+    .detail-box td:first-child { font-weight: bold; width: 40%; color: #333; }
+    .btn-accepted { display: inline-block; margin-top: 8px; padding: 12px 28px; background-color: #16a34a; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: bold; }
+    .btn-rejected { display: inline-block; margin-top: 8px; padding: 12px 28px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: bold; }
+    .status-badge-accepted { display: inline-block; background: #16a34a; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+    .status-badge-rejected { display: inline-block; background: #dc2626; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+    .footer { background: #f4f4f4; padding: 16px 32px; text-align: center; font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    {% if action == 'accepted' %}
+    <div class="header-accepted">
+      <h1>🎉 Booking Request Accepted!</h1>
+    </div>
+    {% else %}
+    <div class="header-rejected">
+      <h1>❌ Booking Request Rejected</h1>
+    </div>
+    {% endif %}
+
+    <div class="body">
+      <p>Hi <strong>{{ student_name }}</strong>,</p>
+
+      {% if action == 'accepted' %}
+      <p>Great news! Your booking request has been <span class="status-badge-accepted">Accepted</span> by <strong>{{ tutor_name }}</strong>.</p>
+      <p>The tutor will get in touch with you soon. You can also view your booking details below.</p>
+      {% else %}
+      <p>We're sorry to inform you that your booking request has been <span class="status-badge-rejected">Rejected</span> by <strong>{{ tutor_name }}</strong>.</p>
+      <p>Don't worry — there are many other great tutors on TutorGali. You can search and send a request to another tutor.</p>
+      {% endif %}
+
+      <div class="detail-box {% if action == 'accepted' %}detail-box-accepted{% else %}detail-box-rejected{% endif %}">
+        <table>
+          <tr>
+            <td>Tutor</td>
+            <td>{{ tutor_name }}</td>
+          </tr>
+          <tr>
+            <td>Grade</td>
+            <td>{{ grade }}</td>
+          </tr>
+          <tr>
+            <td>Subject</td>
+            <td>{{ subject }}</td>
+          </tr>
+          <tr>
+            <td>Teaching Mode</td>
+            <td>{{ mode }}</td>
+          </tr>
+          <tr>
+            <td>Time Slot</td>
+            <td>{{ time_slot }}</td>
+          </tr>
+          {% if price %}
+          <tr>
+            <td>Rate (₹/hr)</td>
+            <td>₹{{ price }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td>Status</td>
+            <td>
+              {% if action == 'accepted' %}
+              <span class="status-badge-accepted">Accepted</span>
+              {% else %}
+              <span class="status-badge-rejected">Rejected</span>
+              {% endif %}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      {% if action == 'accepted' %}
+      <a href="{{ bookings_url }}" class="btn-accepted">View My Bookings</a>
+      {% else %}
+      <a href="{{ browse_url }}" class="btn-rejected">Find Another Tutor</a>
+      {% endif %}
+
+      <p style="margin-top: 24px; font-size: 13px; color: #888;">
+        If you did not expect this email, you can safely ignore it.
+      </p>
+    </div>
+
+    <div class="footer">
+      &copy; TutorGali &mdash; Connecting Students with the Right Tutors
+    </div>
+  </div>
+</body>
+</html>

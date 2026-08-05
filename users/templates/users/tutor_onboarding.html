@@ -1,0 +1,472 @@
+{% extends 'users/base.html' %}
+{% block title %}Complete Your Profile — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  .onboarding-wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* Progress Steps */
+  .onboard-steps { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 32px; overflow-x: auto; padding: 4px 0; }
+  .onboard-step { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+  .onboard-step-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--border); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700; }
+  .onboard-step.active .onboard-step-circle { background: var(--gradient); color: #fff; box-shadow: var(--shadow-primary); }
+  .onboard-step-label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-align: center; white-space: nowrap; }
+  .onboard-step.active .onboard-step-label { color: var(--primary); }
+  .onboard-step-line { width: 40px; height: 2px; background: var(--border); margin-bottom: 20px; flex-shrink: 0; }
+
+  /* Section Cards */
+  .section-card { background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-xs); padding: 24px; margin-bottom: 20px; }
+  .section-card-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid var(--gradient-soft); }
+  .section-card-title i { color: var(--primary); }
+
+  /* Checkbox grid */
+  .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .check-grid label { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); font-size: 0.88rem; font-weight: 500; background: var(--bg-input); }
+  .check-grid label:hover { border-color: var(--primary); background: var(--gradient-soft); }
+  .check-grid input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); flex-shrink: 0; }
+
+  /* Form fields */
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+  .form-group input[type="text"],
+  .form-group input[type="number"],
+  .form-group select,
+  .form-group textarea {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 0.9rem; color: var(--text-primary); background: var(--bg-input);
+    transition: var(--transition); min-height: 44px;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+  }
+  .form-hint { margin-top: 4px; font-size: 0.78rem; color: var(--text-secondary); }
+
+  /* Qualification other */
+  .qual-other-box { margin-top: 12px; padding: 16px; background: var(--gradient-soft); border: 1.5px dashed var(--primary); border-radius: var(--radius-sm); }
+
+  /* Address grid */
+  .addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .addr-grid { grid-template-columns: 1fr; } }
+
+  /* Map */
+  #map { height: 360px; border-radius: var(--radius-md); border: 2px solid var(--border); margin: 16px 0; }
+  .map-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .map-btn { padding: 11px 16px; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+  .map-btn-addr { background: var(--gradient); color: #fff; box-shadow: var(--shadow-primary); }
+  .map-btn-gps  { background: var(--success); color: #fff; }
+  .map-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .coord-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .coord-input { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-input); font-family: inherit; font-size: 0.85rem; color: var(--text-secondary); width: 100%; }
+
+  /* Grade section */
+  #grade-section { display: none; margin-top: 4px; }
+  #grade-section.show { display: block; }
+  .grade-container { margin-bottom: 14px; border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; transition: var(--transition); background: var(--bg-card); }
+  .grade-container.active { border-color: var(--primary); box-shadow: 0 4px 12px rgba(102,126,234,0.12); }
+  .grade-header { padding: 14px 18px; display: flex; align-items: center; cursor: pointer; background: var(--bg-input); transition: var(--transition); }
+  .grade-container.active .grade-header { background: var(--gradient-soft); }
+  .grade-checkbox { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 0.95rem; }
+  .grade-checkbox input { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
+  .grade-checkbox label { cursor: pointer; user-select: none; }
+  .grade-body { display: none; padding: 20px; background: #fafbff; border-top: 1px solid var(--border); }
+  .grade-body.show { display: block; animation: slideDown 0.25s ease-out; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .rates-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
+  .rate-field { display: none; }
+  .rate-field.show { display: block; }
+  .rate-field label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block; }
+  .rate-field input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.9rem; text-align: center; background: var(--bg-input); transition: var(--transition); }
+  .rate-field input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+  .fill-all-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: var(--gradient); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-primary); }
+  .fill-all-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  /* Submit */
+  .submit-btn { width: 100%; padding: 16px; background: var(--gradient); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-primary); display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; margin-top: 8px; }
+  .submit-btn:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 14px 32px rgba(102,126,234,0.38); }
+
+  @media (max-width: 600px) {
+    .map-btn-row { grid-template-columns: 1fr; }
+    .coord-row { grid-template-columns: 1fr; }
+    .check-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-wrap">
+
+  <!-- Header -->
+  <div style="text-align:center; margin-bottom:28px;">
+    <h1 style="font-size:1.7rem; font-weight:800; color:var(--text-primary); margin-bottom:6px;">
+      <i class="fas fa-user-edit" style="color:var(--primary);"></i> Complete Your Tutor Profile
+    </h1>
+    <p style="color:var(--text-secondary);">Set up your profile to attract more students</p>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="onboard-steps">
+    <div class="onboard-step active"><div class="onboard-step-circle">1</div><div class="onboard-step-label">Languages &amp; Qualification</div></div>
+    <div class="onboard-step-line"></div>
+    <div class="onboard-step active"><div class="onboard-step-circle">2</div><div class="onboard-step-label">Address &amp; Location</div></div>
+    <div class="onboard-step-line"></div>
+    <div class="onboard-step active"><div class="onboard-step-circle">3</div><div class="onboard-step-label">Teaching Mode &amp; Grades</div></div>
+    <div class="onboard-step-line"></div>
+    <div class="onboard-step active"><div class="onboard-step-circle">4</div><div class="onboard-step-label">Experience &amp; Bio</div></div>
+  </div>
+
+  <form method="post" id="onboarding-form">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {{ profile_form.latitude }}
+    {{ profile_form.longitude }}
+
+    <!-- 1. Languages -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-language"></i> Languages You Speak</div>
+      <div class="check-grid">
+        {% for choice in profile_form.languages %}
+          <label>{{ choice.tag }} {{ choice.choice_label }}</label>
+        {% endfor %}
+      </div>
+      {{ profile_form.languages.errors }}
+    </div>
+
+    <!-- 2. Qualification -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-graduation-cap"></i> Your Highest Qualification</div>
+      <div class="form-group">
+        <label>Select Your Degree *</label>
+        {{ profile_form.qualification }}
+        {{ profile_form.qualification.errors }}
+      </div>
+      <div id="qualification-other-container" class="qual-other-box" style="display:none;">
+        <label>Please Specify Your Qualification *</label>
+        {{ profile_form.qualification_other }}
+        {{ profile_form.qualification_other.errors }}
+      </div>
+      <div class="form-group" style="margin-top:14px;">
+        <label>College / University / School Name *</label>
+        {{ profile_form.education_institute }}
+        <div class="form-hint"><i class="fas fa-info-circle"></i> Where did you complete your education?</div>
+        {{ profile_form.education_institute.errors }}
+      </div>
+    </div>
+
+    <!-- 3. Address -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-map-marker-alt"></i> Your Address</div>
+      <div class="alert alert-info" style="margin-bottom:16px;">
+        <i class="fas fa-info-circle"></i> This helps students find tutors in their locality
+      </div>
+      <div class="form-group">
+        <label>Address Line 1 *</label>
+        {{ profile_form.address_line1 }}
+        {{ profile_form.address_line1.errors }}
+      </div>
+      <div class="form-group">
+        <label>Address Line 2 (Optional)</label>
+        {{ profile_form.address_line2 }}
+        {{ profile_form.address_line2.errors }}
+      </div>
+      <div class="addr-grid">
+        <div class="form-group">
+          <label>State *</label>
+          {{ profile_form.state }}
+          {{ profile_form.state.errors }}
+        </div>
+        <div class="form-group">
+          <label>City *</label>
+          {{ profile_form.city }}
+          {{ profile_form.city.errors }}
+        </div>
+      </div>
+      <div class="form-group" style="max-width:240px;">
+        <label>Pincode *</label>
+        {{ profile_form.pincode }}
+        {{ profile_form.pincode.errors }}
+      </div>
+
+      <!-- Map -->
+      <div id="map"></div>
+      <div class="coord-row">
+        <div>
+          <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">Latitude</label>
+          <input type="text" id="lat-display" class="coord-input" readonly placeholder="Auto-filled from map">
+        </div>
+        <div>
+          <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">Longitude</label>
+          <input type="text" id="lng-display" class="coord-input" readonly placeholder="Auto-filled from map">
+        </div>
+      </div>
+      <div class="map-btn-row">
+        <button type="button" onclick="searchByAddress()" class="map-btn map-btn-addr">
+          <i class="fas fa-search-location"></i> Use Address / Pincode
+        </button>
+        <button type="button" onclick="getCurrentLocation()" class="map-btn map-btn-gps">
+          <i class="fas fa-location-arrow"></i> Use GPS Location
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. Teaching Mode -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-chalkboard-teacher"></i> How Would You Like to Conduct Classes?</div>
+      <div class="check-grid" style="grid-template-columns:1fr;">
+        {% for choice in profile_form.teaching_mode %}
+          <label>{{ choice.tag }} {{ choice.choice_label }}</label>
+        {% endfor %}
+      </div>
+      {{ profile_form.teaching_mode.errors }}
+    </div>
+
+    <!-- 5. Grades & Subjects -->
+    <div id="grade-section">
+      <div class="section-card">
+        <div class="section-card-title"><i class="fas fa-book"></i> Which Grades &amp; Subjects Do You Teach?</div>
+        <div class="alert alert-info" style="margin-bottom:16px;">
+          <i class="fas fa-info-circle"></i> Select grades below and provide subjects with rates for each teaching mode you've selected
+        </div>
+
+        {% for form, label in forms_with_labels %}
+          <div class="grade-container" data-grade-index="{{ forloop.counter0 }}">
+            <div class="grade-header">
+              <div class="grade-checkbox">
+                <input type="checkbox" id="grade_checkbox_{{ forloop.counter0 }}" data-index="{{ forloop.counter0 }}">
+                <label for="grade_checkbox_{{ forloop.counter0 }}">{{ label }}</label>
+              </div>
+            </div>
+            <div class="grade-body">
+              <div class="form-group">
+                <label><i class="fas fa-book-open"></i> Subjects (comma-separated) *</label>
+                {{ form.subjects }}
+                <div class="form-hint"><i class="fas fa-lightbulb"></i> e.g. Mathematics, Science, English, Hindi</div>
+                {{ form.subjects.errors }}
+              </div>
+              <div class="form-group">
+                <label><i class="fas fa-rupee-sign"></i> Hourly Rates *</label>
+                <div class="rates-grid">
+                  <div class="rate-field" data-mode="online">
+                    <label>Online Rate (₹/hour)</label>
+                    {{ form.rate_online }}
+                    {{ form.rate_online.errors }}
+                  </div>
+                  <div class="rate-field" data-mode="student_home">
+                    <label>At Student's Home (₹/hour)</label>
+                    {{ form.rate_student_home }}
+                    {{ form.rate_student_home.errors }}
+                  </div>
+                  <div class="rate-field" data-mode="my_home">
+                    <label>At My Home (₹/hour)</label>
+                    {{ form.rate_my_home }}
+                    {{ form.rate_my_home.errors }}
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="fill-all-btn" data-target="{{ forloop.counter0 }}">
+                <i class="fas fa-th-list"></i> Fill All Subjects
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+
+        {{ formset.non_form_errors }}
+      </div>
+    </div>
+
+    <!-- 6. School Boards -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-school"></i> School Boards You Teach</div>
+      <div class="check-grid">
+        {% for choice in profile_form.school_boards %}
+          <label>{{ choice.tag }} {{ choice.choice_label }}</label>
+        {% endfor %}
+      </div>
+      {{ profile_form.school_boards.errors }}
+    </div>
+
+    <!-- 7. Experience -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-briefcase"></i> Teaching Experience</div>
+      <div class="form-group" style="max-width:300px;">
+        <label>Years of Teaching Experience *</label>
+        {{ profile_form.experience_years }}
+        {{ profile_form.experience_years.errors }}
+      </div>
+    </div>
+
+    <!-- 8. Bio -->
+    <div class="section-card">
+      <div class="section-card-title"><i class="fas fa-info-circle"></i> About You</div>
+      <div class="form-group">
+        <label>Tell Students About Yourself</label>
+        {{ profile_form.bio }}
+        <div class="form-hint"><i class="fas fa-lightbulb"></i> Share your teaching style, achievements, and specializations</div>
+        {{ profile_form.bio.errors }}
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn">
+      <i class="fas fa-check-circle"></i> Complete Profile &amp; Start Teaching
+    </button>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var allSubjects = 'Mathematics, Science, English, Hindi, Social Studies, EVS, Computer Science, Drawing, GK, Physics, Chemistry, Biology, Economics, Accounts, Business Studies, History, Geography, Political Science, Sociology, Psychology, Physical Education';
+
+// Qualification "Other" toggle
+var qualificationSelect = document.getElementById('id_qualification');
+var otherContainer = document.getElementById('qualification-other-container');
+function toggleOtherField() {
+  if (qualificationSelect && qualificationSelect.value === 'Other') {
+    otherContainer.style.display = 'block';
+  } else if (otherContainer) {
+    otherContainer.style.display = 'none';
+  }
+}
+if (qualificationSelect) {
+  qualificationSelect.addEventListener('change', toggleOtherField);
+  toggleOtherField();
+}
+
+// Teaching mode → grade section
+var teachingModeCheckboxes = document.querySelectorAll('input[name="teaching_mode"]');
+var gradeSection = document.getElementById('grade-section');
+function updateGradeSection() {
+  var anyChecked = Array.from(teachingModeCheckboxes).some(function(cb) { return cb.checked; });
+  if (anyChecked) { gradeSection.classList.add('show'); } else { gradeSection.classList.remove('show'); }
+  updateRateFieldsVisibility();
+}
+teachingModeCheckboxes.forEach(function(cb) { cb.addEventListener('change', updateGradeSection); });
+
+function updateRateFieldsVisibility() {
+  var selectedModes = Array.from(teachingModeCheckboxes).filter(function(cb) { return cb.checked; }).map(function(cb) { return cb.value; });
+  document.querySelectorAll('.rate-field').forEach(function(field) {
+    var mode = field.getAttribute('data-mode');
+    var input = field.querySelector('input');
+    if (selectedModes.includes(mode)) {
+      field.classList.add('show');
+      input.removeAttribute('disabled');
+    } else {
+      field.classList.remove('show');
+      input.setAttribute('disabled', 'disabled');
+      input.value = '';
+    }
+  });
+}
+
+// Grade checkbox toggle
+document.querySelectorAll('[id^="grade_checkbox_"]').forEach(function(checkbox) {
+  var gradeContainer = checkbox.closest('.grade-container');
+  var gradeBody = gradeContainer.querySelector('.grade-body');
+  checkbox.addEventListener('change', function() {
+    if (this.checked) {
+      gradeContainer.classList.add('active');
+      gradeBody.classList.add('show');
+    } else {
+      gradeContainer.classList.remove('active');
+      gradeBody.classList.remove('show');
+    }
+    updateRateFieldsVisibility();
+  });
+});
+
+// Fill all subjects
+document.querySelectorAll('.fill-all-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var index = this.getAttribute('data-target');
+    var subjectsField = document.querySelector('#id_form-' + index + '-subjects');
+    if (subjectsField) { subjectsField.value = allSubjects; subjectsField.focus(); }
+  });
+});
+
+// Form submit validation
+document.getElementById('onboarding-form').addEventListener('submit', function(e) {
+  var anyGradeChecked = Array.from(document.querySelectorAll('[id^="grade_checkbox_"]')).some(function(cb) { return cb.checked; });
+  if (!anyGradeChecked) {
+    e.preventDefault();
+    alert('Please select at least one grade with subjects and rates!');
+    return false;
+  }
+  document.querySelectorAll('.rate-field:not(.show) input').forEach(function(input) {
+    input.setAttribute('disabled', 'disabled');
+  });
+});
+
+// State → City filter
+var citiesByState = {{ cities_by_state_json|safe }};
+var stateSelect = document.getElementById('id_state');
+var citySelect  = document.getElementById('id_city');
+function updateCities() {
+  var selectedState = stateSelect.value;
+  var cities = citiesByState[selectedState] || [];
+  citySelect.innerHTML = '';
+  var placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = selectedState ? 'Select City' : 'Select State First';
+  citySelect.appendChild(placeholder);
+  cities.forEach(function(city) {
+    var opt = document.createElement('option');
+    opt.value = city; opt.textContent = city;
+    citySelect.appendChild(opt);
+  });
+}
+if (stateSelect) { stateSelect.addEventListener('change', updateCities); updateCities(); }
+
+updateGradeSection();
+</script>
+
+<script>
+var map, marker, geocoder;
+function initMap() {
+  var india = { lat: 20.5937, lng: 78.9629 };
+  map = new google.maps.Map(document.getElementById('map'), { zoom: 5, center: india, mapTypeId: 'roadmap' });
+  marker = new google.maps.Marker({ map: map, position: india, draggable: true });
+  geocoder = new google.maps.Geocoder();
+  marker.addListener('dragend', function() { updateCoords(marker.getPosition()); });
+  map.addListener('click', function(e) { marker.setPosition(e.latLng); updateCoords(e.latLng); });
+}
+function updateCoords(latLng) {
+  var lat = latLng.lat().toFixed(6);
+  var lng = latLng.lng().toFixed(6);
+  var latInput = document.getElementById('id_latitude');
+  var lngInput = document.getElementById('id_longitude');
+  var latDisp  = document.getElementById('lat-display');
+  var lngDisp  = document.getElementById('lng-display');
+  if (latInput) latInput.value = lat;
+  if (lngInput) lngInput.value = lng;
+  if (latDisp)  latDisp.value  = lat;
+  if (lngDisp)  lngDisp.value  = lng;
+}
+function searchByAddress() {
+  var addr1   = (document.querySelector('input[name="address_line1"]') || {}).value || '';
+  var city    = (document.querySelector('select[name="city"]') || document.querySelector('input[name="city"]') || {}).value || '';
+  var state   = (document.querySelector('select[name="state"]') || document.querySelector('input[name="state"]') || {}).value || '';
+  var pincode = (document.querySelector('input[name="pincode"]') || {}).value || '';
+  var query = (addr1 + ', ' + city + ', ' + state + ' ' + pincode + ', India').trim();
+  if (!query.replace(/[, ]/g, '')) { alert('Please enter address / city / pincode first'); return; }
+  geocoder.geocode({ address: query }, function(results, status) {
+    if (status === 'OK' && results[0]) {
+      var loc = results[0].geometry.location;
+      map.setCenter(loc); map.setZoom(17); marker.setPosition(loc); updateCoords(loc);
+    } else { alert('Location not found. Try adjusting the address.'); }
+  });
+}
+function getCurrentLocation() {
+  if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      var loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      map.setCenter(loc); map.setZoom(17); marker.setPosition(loc);
+      updateCoords(new google.maps.LatLng(loc.lat, loc.lng));
+    },
+    function() { alert('Could not get GPS location'); }
+  );
+}
+</script>
+
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap"></script>
+{% endblock %}

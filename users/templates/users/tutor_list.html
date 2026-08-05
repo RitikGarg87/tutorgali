@@ -1,0 +1,762 @@
+{% extends 'users/base.html' %}
+{% block title %}Tutors Near You — TutorGali{% endblock %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+
+  /* ── Page Layout: sidebar + content ── */
+  .search-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .filter-sidebar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: calc(var(--nav-height) + 16px);
+    overflow: hidden;
+  }
+
+  .filter-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--gradient-soft);
+  }
+
+  .filter-sidebar-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .filter-sidebar-title i { color: var(--primary); }
+
+  .filter-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: var(--gradient);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .filter-sidebar-body {
+    padding: 16px;
+  }
+
+  /* Each filter section */
+  .filter-section {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .filter-section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .filter-section-label i { color: var(--primary); font-size: 0.7rem; }
+
+  .filter-select,
+  .filter-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    transition: var(--transition);
+    min-height: 40px;
+    appearance: auto;
+  }
+
+  .filter-select:focus,
+  .filter-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.10);
+  }
+
+  .filter-input::placeholder { color: var(--text-muted); }
+
+  /* Location + GPS */
+  .location-wrap { display: flex; flex-direction: column; gap: 8px; }
+
+  .gps-btn-sidebar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--gradient-soft);
+    color: var(--primary);
+    border: 1.5px solid rgba(102,126,234,0.3);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 38px;
+  }
+
+  .gps-btn-sidebar:hover { background: var(--gradient); color: #fff; border-color: var(--primary); }
+  .gps-btn-sidebar.success { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+
+  /* Action buttons */
+  .filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-apply {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px;
+    background: var(--gradient);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-primary);
+    min-height: 44px;
+  }
+
+  .btn-apply:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .btn-reset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    min-height: 40px;
+  }
+
+  .btn-reset:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+
+  /* ── RIGHT CONTENT ── */
+  .results-area {}
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .results-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .results-title i { color: var(--primary); }
+
+  .results-meta {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+
+  .active-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .active-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: var(--gradient-soft);
+    border: 1px solid rgba(102,126,234,0.25);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+
+  /* Mobile: stack sidebar on top */
+  .mobile-filter-toggle {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .mobile-filter-toggle i { color: var(--primary); }
+
+  @media (max-width: 900px) {
+    .search-page {
+      grid-template-columns: 1fr;
+      padding: 16px 14px 48px;
+    }
+
+    .filter-sidebar {
+      position: static;
+      display: none;
+    }
+
+    .filter-sidebar.mobile-open {
+      display: block;
+    }
+
+    .mobile-filter-toggle {
+      display: flex;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .results-header { flex-direction: column; align-items: flex-start; }
+    .active-filter-pills { display: none; }
+  }
+
+  /* Clickable card */
+  .tutor-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .tutor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(102,126,234,0.18);
+    border-color: var(--primary);
+  }
+  .tutor-card:hover .tutor-name { color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Mobile filter toggle button -->
+<div class="mobile-filter-toggle" onclick="toggleMobileFilters()" id="mobileFilterToggle">
+  <span><i class="fas fa-sliders-h"></i> &nbsp;Filters &amp; Search</span>
+  <span style="display:flex; align-items:center; gap:8px;">
+    {% if grade or subject or mode or time_slot %}
+      <span style="background:var(--gradient); color:#fff; border-radius:999px; padding:2px 8px; font-size:0.72rem; font-weight:800;">Active</span>
+    {% endif %}
+    <i class="fas fa-chevron-down" id="mobileChevron" style="transition:transform 0.25s;"></i>
+  </span>
+</div>
+
+<div class="search-page">
+
+  <!-- ══════════════════════════════════════
+       LEFT SIDEBAR — FILTERS
+  ══════════════════════════════════════ -->
+  <aside class="filter-sidebar" id="filterSidebar">
+
+    <div class="filter-sidebar-header">
+      <div class="filter-sidebar-title">
+        <i class="fas fa-sliders-h"></i>
+        Refine Search
+      </div>
+      <!-- Count active filters -->
+      {% with active=0 %}
+        {% if grade %}{% with active=active|add:1 %}{% endwith %}{% endif %}
+        {% if subject %}{% with active=active|add:1 %}{% endwith %}{% endif %}
+        {% if mode %}{% with active=active|add:1 %}{% endwith %}{% endif %}
+        {% if time_slot %}{% with active=active|add:1 %}{% endwith %}{% endif %}
+      {% endwith %}
+    </div>
+
+    <div class="filter-sidebar-body">
+      <form method="get" action="{% url 'search_tutors' %}" id="filterForm">
+
+        <!-- Grade -->
+        <div class="filter-section">
+          <div class="filter-section-label">
+            <i class="fas fa-layer-group"></i> Grade
+          </div>
+          <select name="grade" class="filter-select">
+            <option value="">All Grades</option>
+            <option value="nursery_to_5"  {% if grade == 'nursery_to_5'  %}selected{% endif %}>Nursery to 5th</option>
+            <option value="grade_6"       {% if grade == 'grade_6'       %}selected{% endif %}>6th Grade</option>
+            <option value="grade_7"       {% if grade == 'grade_7'       %}selected{% endif %}>7th Grade</option>
+            <option value="grade_8"       {% if grade == 'grade_8'       %}selected{% endif %}>8th Grade</option>
+            <option value="grade_9"       {% if grade == 'grade_9'       %}selected{% endif %}>9th Grade</option>
+            <option value="grade_10"      {% if grade == 'grade_10'      %}selected{% endif %}>10th Grade</option>
+            <option value="grade_11"      {% if grade == 'grade_11'      %}selected{% endif %}>11th Grade</option>
+            <option value="grade_12"      {% if grade == 'grade_12'      %}selected{% endif %}>12th Grade</option>
+          </select>
+        </div>
+
+        <!-- Subject -->
+        <div class="filter-section">
+          <div class="filter-section-label">
+            <i class="fas fa-book"></i> Subject
+          </div>
+          <input type="text" name="subject" class="filter-input"
+                 value="{{ subject|default:'' }}"
+                 placeholder="e.g. Math, Physics, Hindi">
+        </div>
+
+        <!-- Teaching Mode -->
+        <div class="filter-section">
+          <div class="filter-section-label">
+            <i class="fas fa-chalkboard"></i> Teaching Mode
+          </div>
+          <select name="mode" class="filter-select">
+            <option value="">Any Mode</option>
+            <option value="online"       {% if mode == 'online'       %}selected{% endif %}>🖥 Online</option>
+            <option value="student_home" {% if mode == 'student_home' %}selected{% endif %}>🏠 At Student's Home</option>
+            <option value="my_home"      {% if mode == 'my_home'      %}selected{% endif %}>📍 At Tutor's Home</option>
+          </select>
+        </div>
+
+        <!-- Time Slot -->
+        <div class="filter-section">
+          <div class="filter-section-label">
+            <i class="fas fa-clock"></i> Preferred Time
+          </div>
+          <select name="time_slot" class="filter-select">
+            <option value="">Any Time</option>
+            <option value="04:00-05:00" {% if time_slot == '04:00-05:00' %}selected{% endif %}>04:00 – 05:00 AM</option>
+            <option value="05:00-06:00" {% if time_slot == '05:00-06:00' %}selected{% endif %}>05:00 – 06:00 AM</option>
+            <option value="06:00-07:00" {% if time_slot == '06:00-07:00' %}selected{% endif %}>06:00 – 07:00 AM</option>
+            <option value="07:00-08:00" {% if time_slot == '07:00-08:00' %}selected{% endif %}>07:00 – 08:00 AM</option>
+            <option value="08:00-09:00" {% if time_slot == '08:00-09:00' %}selected{% endif %}>08:00 – 09:00 AM</option>
+            <option value="09:00-10:00" {% if time_slot == '09:00-10:00' %}selected{% endif %}>09:00 – 10:00 AM</option>
+            <option value="10:00-11:00" {% if time_slot == '10:00-11:00' %}selected{% endif %}>10:00 – 11:00 AM</option>
+            <option value="11:00-12:00" {% if time_slot == '11:00-12:00' %}selected{% endif %}>11:00 AM – 12:00 PM</option>
+            <option value="12:00-13:00" {% if time_slot == '12:00-13:00' %}selected{% endif %}>12:00 – 01:00 PM</option>
+            <option value="13:00-14:00" {% if time_slot == '13:00-14:00' %}selected{% endif %}>01:00 – 02:00 PM</option>
+            <option value="14:00-15:00" {% if time_slot == '14:00-15:00' %}selected{% endif %}>02:00 – 03:00 PM</option>
+            <option value="15:00-16:00" {% if time_slot == '15:00-16:00' %}selected{% endif %}>03:00 – 04:00 PM</option>
+            <option value="16:00-17:00" {% if time_slot == '16:00-17:00' %}selected{% endif %}>04:00 – 05:00 PM</option>
+            <option value="17:00-18:00" {% if time_slot == '17:00-18:00' %}selected{% endif %}>05:00 – 06:00 PM</option>
+            <option value="18:00-19:00" {% if time_slot == '18:00-19:00' %}selected{% endif %}>06:00 – 07:00 PM</option>
+            <option value="19:00-20:00" {% if time_slot == '19:00-20:00' %}selected{% endif %}>07:00 – 08:00 PM</option>
+            <option value="20:00-21:00" {% if time_slot == '20:00-21:00' %}selected{% endif %}>08:00 – 09:00 PM</option>
+          </select>
+        </div>
+
+        <!-- Distance -->
+        <div class="filter-section">
+          <div class="filter-section-label">
+            <i class="fas fa-ruler"></i> Max Distance
+          </div>
+          <select name="distance_km" class="filter-select">
+            <option value="1"  {% if distance_km == 1  %}selected{% endif %}>Within 1 km</option>
+            <option value="2"  {% if distance_km == 2  %}selected{% endif %}>Within 2 km</option>
+            <option value="3"  {% if distance_km == 3  %}selected{% endif %}>Within 3 km</option>
+            <option value="4"  {% if distance_km == 4  %}selected{% endif %}>Within 4 km</option>
+            <option value="5"  {% if distance_km == 5  %}selected{% endif %}>Within 5 km</option>
+            <option value="6"  {% if distance_km == 6  %}selected{% endif %}>Within 6 km</option>
+            <option value="7"  {% if distance_km == 7  %}selected{% endif %}>Within 7 km</option>
+            <option value="8"  {% if distance_km == 8  %}selected{% endif %}>Within 8 km</option>
+            <option value="9"  {% if distance_km == 9  %}selected{% endif %}>Within 9 km</option>
+            <option value="10" {% if distance_km == 10 %}selected{% endif %}>Within 10 km</option>
+          </select>
+        </div>
+
+        <!-- Location -->
+        <div class="filter-section">
+          <div class="filter-section-label">
+            <i class="fas fa-map-marker-alt"></i> Your Location
+          </div>
+          <div class="location-wrap">
+            <input type="text" id="fl-locality" name="student_locality" class="filter-input"
+                   value="{{ request.GET.student_locality|default:'' }}"
+                   placeholder="Area, City">
+            <button type="button" class="gps-btn-sidebar" id="fl-gps-btn" onclick="filterPickGPS()">
+              <i class="fas fa-location-arrow"></i> Use My GPS Location
+            </button>
+          </div>
+          <input type="hidden" name="lat" id="fl-lat" value="{{ user_lat|default:'' }}">
+          <input type="hidden" name="lng" id="fl-lng" value="{{ user_lng|default:'' }}">
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="filter-actions">
+          <button type="submit" class="btn-apply">
+            <i class="fas fa-search"></i> Search Tutors
+          </button>
+          <a href="{% url 'browse_tutors' %}" class="btn-reset">
+            <i class="fas fa-redo"></i> Reset Filters
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════
+       RIGHT — RESULTS
+  ══════════════════════════════════════ -->
+  <div class="results-area">
+
+    <!-- Results Header -->
+    <div class="results-header">
+      <div>
+        <div class="results-title">
+          <i class="fas fa-chalkboard-teacher"></i>
+          {{ results|length }} Tutor{{ results|length|pluralize }} Found
+        </div>
+        <div class="results-meta">
+          Within <strong>{{ distance_km }} km</strong>
+          {% if subject %} · <strong>{{ subject }}</strong>{% endif %}
+          {% if grade %} · Grade <strong>{{ grade|cut:"grade_"|cut:"nursery_to_"|title }}</strong>{% endif %}
+          {% if time_slot %} · <strong>{{ time_slot }}</strong>{% endif %}
+        </div>
+      </div>
+
+      <!-- Active filter pills -->
+      <div class="active-filter-pills">
+        {% if grade %}
+          <span class="active-pill"><i class="fas fa-layer-group"></i> {{ grade|cut:"grade_"|cut:"nursery_to_"|title }}</span>
+        {% endif %}
+        {% if subject %}
+          <span class="active-pill"><i class="fas fa-book"></i> {{ subject }}</span>
+        {% endif %}
+        {% if mode %}
+          <span class="active-pill"><i class="fas fa-chalkboard"></i> {{ mode }}</span>
+        {% endif %}
+        {% if time_slot %}
+          <span class="active-pill"><i class="fas fa-clock"></i> {{ time_slot }}</span>
+        {% endif %}
+        <span class="active-pill"><i class="fas fa-ruler"></i> {{ distance_km }} km</span>
+      </div>
+    </div>
+
+    <!-- Tutor Cards Grid -->
+    {% if results %}
+      <div class="tutor-grid">
+        {% for tutor, dist in results %}
+          <div class="tutor-card" style="position:relative; cursor:pointer;"
+               onclick="window.location='{% url 'tutor_public_profile' tutor.id %}?grade={{ grade|default:'' }}&subject={{ subject|default:'' }}&time_slot={{ time_slot|default:'' }}&mode={{ mode|default:'' }}'">
+
+            <!-- Header -->
+            <div class="tutor-card-header">
+              <div class="avatar">{{ tutor.full_name.0|upper }}</div>
+              <div class="name-block">
+                <div class="name-row">
+                  <h3 class="tutor-name">{{ tutor.full_name }}</h3>
+                  {% if tutor.is_verified %}
+                    <span class="badge-verified-pill"><span class="dot"></span> Verified</span>
+                  {% endif %}
+                </div>
+                <p class="tutor-location">
+                  {{ tutor.city|default:"" }}{% if tutor.state %}, {{ tutor.state }}{% endif %}
+                </p>
+                <!-- Rating badge -->
+                {% if tutor.avg_rating %}
+                  <div style="display:flex; align-items:center; gap:4px; margin-top:3px;">
+                    <span style="color:#f59e0b; font-size:0.8rem;">★</span>
+                    <span style="font-size:0.78rem; font-weight:700; color:var(--text-primary);">{{ tutor.avg_rating }}</span>
+                    <span style="font-size:0.72rem; color:var(--text-secondary);">({{ tutor.review_count }})</span>
+                  </div>
+                {% else %}
+                  <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">No reviews yet</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div class="tutor-card-body">
+              {% if dist %}
+                <p class="line"><span class="lab">Distance:</span> <span>{{ dist|floatformat:1 }} km away</span></p>
+              {% endif %}
+              <p class="line"><span class="lab">Experience:</span> <span>{{ tutor.experience_years|default:"N/A" }} yrs</span></p>
+              <p class="line"><span class="lab">Address:</span> <span>{{ tutor.address_line2|default:"Not provided" }}, {{ tutor.city|default:"" }}{% if tutor.pincode %} – {{ tutor.pincode }}{% endif %}</span></p>
+              <p class="line"><span class="lab">Education:</span> <span>{{ tutor.qualification|default:"N/A" }}</span></p>
+
+              {% with rates=tutor.grade_rates.all %}
+                {% if rates %}
+                  <p class="side-heading">Subjects &amp; Rates</p>
+                  <ul class="rates-list">
+                    {% for gr in rates %}
+                      {% if not grade or gr.grade == grade %}
+                        <li>
+                          <span class="grade-label">{{ gr.get_grade_display }}:</span>
+                          <span class="subjects">{{ gr.subjects|truncatechars:60 }}</span><br>
+                          <span class="rate-line">
+                            {% if gr.rate_online %}Online ₹{{ gr.rate_online }}/hr
+                            {% elif gr.rate_student_home %}At Student ₹{{ gr.rate_student_home }}/hr
+                            {% elif gr.rate_my_home %}At Tutor ₹{{ gr.rate_my_home }}/hr
+                            {% else %}Rate not available{% endif %}
+                          </span>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            <!-- Footer — stop propagation so buttons don't trigger card click -->
+            <div class="tutor-card-footer" onclick="event.stopPropagation()">
+              {% if tutor.booking_status == 'accepted' %}
+                <div class="status-row">
+                  <span class="badge-status badge-status-accepted"><i class="fas fa-check-circle"></i> Request Accepted</span>
+                </div>
+                <a href="{% url 'student_bookings' %}" class="btn btn-success contact-btn"
+                   onclick="event.stopPropagation()">
+                  <i class="fas fa-phone-alt"></i> View Contact Details
+                </a>
+                <a href="{% url 'tutor_public_profile' tutor.id %}#reviews"
+                   onclick="event.stopPropagation()"
+                   style="display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;border:1px solid var(--border);border-radius:999px;font-size:0.8rem;font-weight:700;color:var(--text-secondary);text-decoration:none;margin-top:4px;">
+                  {% if tutor.my_review %}
+                    <i class="fas fa-edit" style="color:var(--primary);"></i> Edit Your Review
+                  {% else %}
+                    <i class="fas fa-star" style="color:#f59e0b;"></i> Leave a Review
+                  {% endif %}
+                </a>
+
+              {% elif tutor.booking_status == 'pending' %}
+                <div class="status-row">
+                  <span class="badge-status badge-status-pending"><i class="fas fa-clock"></i> Request Pending</span>
+                </div>
+                <a href="{% url 'student_bookings' %}" class="contact-btn"
+                   onclick="event.stopPropagation()"
+                   style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px solid var(--border);border-radius:999px;font-size:0.86rem;font-weight:600;color:var(--text-secondary);text-decoration:none;">
+                  <i class="fas fa-list"></i> View My Requests
+                </a>
+
+              {% elif tutor.booking_status == 'rejected' %}
+                <div class="status-row">
+                  <span class="badge-status badge-status-rejected"><i class="fas fa-times-circle"></i> Request Rejected</span>
+                </div>
+                <form method="post" action="{% url 'create_booking_request' tutor.id %}"
+                      onclick="event.stopPropagation()">
+                  {% csrf_token %}
+                  <input type="hidden" name="subject"   value="{{ subject|default:'' }}">
+                  <input type="hidden" name="grade"     value="{{ grade|default:'' }}">
+                  <input type="hidden" name="time_slot" value="{{ time_slot|default:'' }}">
+                  <input type="hidden" name="mode"      value="{{ mode|default:'' }}">
+                  <textarea name="message" rows="2" placeholder="Send a fresh message to this tutor"
+                            class="message-box" onclick="event.stopPropagation()"></textarea>
+                  <button type="submit" class="btn btn-primary contact-btn"
+                          onclick="event.stopPropagation()">
+                    <i class="fas fa-paper-plane"></i> Send Request Again
+                  </button>
+                </form>
+
+              {% else %}
+                {% if tutor.is_verified %}
+                  <span class="badge-verified-small">Verified tutor</span>
+                {% endif %}
+                <form method="post" action="{% url 'create_booking_request' tutor.id %}"
+                      onclick="event.stopPropagation()">
+                  {% csrf_token %}
+                  <input type="hidden" name="subject"   value="{{ subject|default:'' }}">
+                  <input type="hidden" name="grade"     value="{{ grade|default:'' }}">
+                  <input type="hidden" name="time_slot" value="{{ time_slot|default:'' }}">
+                  <input type="hidden" name="mode"      value="{{ mode|default:'' }}">
+                  <textarea name="message" rows="2" placeholder="Tell the tutor about your requirement"
+                            class="message-box" onclick="event.stopPropagation()"></textarea>
+                  <button type="submit" class="btn btn-primary contact-btn"
+                          onclick="event.stopPropagation()">
+                    <i class="fas fa-paper-plane"></i> Contact This Tutor
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if results.has_other_pages %}
+      <div class="pagination-wrap" style="justify-content:center; padding:28px 0 8px;">
+        {% if results.has_previous %}
+          <a href="?grade={{ grade|default:'' }}&subject={{ subject|default:'' }}&mode={{ mode|default:'' }}&time_slot={{ time_slot|default:'' }}&distance_km={{ distance_km }}&lat={{ user_lat|default:'' }}&lng={{ user_lng|default:'' }}&page={{ results.previous_page_number }}" class="page-btn">‹ Prev</a>
+        {% endif %}
+        {% for num in results.paginator.page_range %}
+          {% if results.number == num %}
+            <span class="page-btn active">{{ num }}</span>
+          {% elif num >= results.number|add:"-2" and num <= results.number|add:"2" %}
+            <a href="?grade={{ grade|default:'' }}&subject={{ subject|default:'' }}&mode={{ mode|default:'' }}&time_slot={{ time_slot|default:'' }}&distance_km={{ distance_km }}&lat={{ user_lat|default:'' }}&lng={{ user_lng|default:'' }}&page={{ num }}" class="page-btn">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if results.has_next %}
+          <a href="?grade={{ grade|default:'' }}&subject={{ subject|default:'' }}&mode={{ mode|default:'' }}&time_slot={{ time_slot|default:'' }}&distance_km={{ distance_km }}&lat={{ user_lat|default:'' }}&lng={{ user_lng|default:'' }}&page={{ results.next_page_number }}" class="page-btn">Next ›</a>
+        {% endif %}
+        <span class="page-info">Page {{ results.number }} of {{ results.paginator.num_pages }}</span>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="card" style="text-align:center; padding:56px 24px;">
+        <i class="fas fa-search" style="font-size:3rem; color:var(--border); margin-bottom:16px; display:block;"></i>
+        <h3 style="font-weight:800; margin-bottom:8px; color:var(--text-primary);">No tutors found</h3>
+        <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.92rem;">
+          Try increasing the distance, changing the subject, or removing the time slot filter.
+        </p>
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button onclick="document.getElementById('filterForm').distance_km.value=10; document.getElementById('filterForm').submit();"
+                  class="btn btn-primary btn-sm">
+            <i class="fas fa-expand-arrows-alt"></i> Expand to 10 km
+          </button>
+          <a href="{% url 'browse_tutors' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-redo"></i> Start Over
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+  </div><!-- /results-area -->
+
+</div><!-- /search-page -->
+
+<!-- Google Maps for GPS + Autocomplete -->
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initFilterMap">
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  /* ── Mobile sidebar toggle ── */
+  function toggleMobileFilters() {
+    var sidebar = document.getElementById('filterSidebar');
+    var chevron = document.getElementById('mobileChevron');
+    var open = sidebar.classList.toggle('mobile-open');
+    chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+
+  /* ── Google Maps: Autocomplete + Geocoder ── */
+  var filterGeocoder;
+
+  function initFilterMap() {
+    filterGeocoder = new google.maps.Geocoder();
+    var input = document.getElementById('fl-locality');
+    if (input && google.maps.places) {
+      var ac = new google.maps.places.Autocomplete(input, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'in' }
+      });
+      ac.addListener('place_changed', function () {
+        var place = ac.getPlace();
+        if (place.geometry) {
+          document.getElementById('fl-lat').value = place.geometry.location.lat();
+          document.getElementById('fl-lng').value = place.geometry.location.lng();
+        }
+      });
+    }
+  }
+
+  /* ── GPS pick ── */
+  function filterPickGPS() {
+    var btn = document.getElementById('fl-gps-btn');
+    if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting…';
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        document.getElementById('fl-lat').value = lat;
+        document.getElementById('fl-lng').value = lng;
+
+        if (filterGeocoder) {
+          filterGeocoder.geocode({ location: { lat: lat, lng: lng } }, function (results, status) {
+            if (status === 'OK' && results[0]) {
+              var comp = results[0].address_components.find(function (c) {
+                return c.types.includes('sublocality') || c.types.includes('locality');
+              });
+              document.getElementById('fl-locality').value =
+                comp ? comp.long_name : results[0].formatted_address;
+            }
+            btn.classList.add('success');
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Location Detected';
+            btn.disabled = false;
+          });
+        } else {
+          btn.classList.add('success');
+          btn.innerHTML = '<i class="fas fa-check-circle"></i> Location Set';
+          btn.disabled = false;
+        }
+      },
+      function () {
+        btn.innerHTML = '<i class="fas fa-location-arrow"></i> Use My GPS Location';
+        btn.disabled = false;
+        alert('Location access denied. Please enter your area manually.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+</script>
+{% endblock %}

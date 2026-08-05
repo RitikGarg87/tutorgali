@@ -1,0 +1,61 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Add Admin{% endblock %}
+{% block page_title %}Register New Admin{% endblock %}
+{% block nav_register %}active{% endblock %}
+
+{% block content %}
+
+<div style="max-width:520px;">
+
+  <div class="card" style="margin-bottom:16px; padding:16px 20px; background:#fffbeb; border:1px solid #fde68a;">
+    <div style="display:flex; align-items:center; gap:10px; font-size:0.88rem; color:#92400e;">
+      <i class="fas fa-shield-alt" style="font-size:1.1rem;"></i>
+      <div>
+        <strong>Superuser Only</strong> — Only superusers can create new admin accounts.
+        New admins will have <code>is_staff=True</code> and can access this admin panel.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="fas fa-user-shield"></i> Create New Admin Account</div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-user"></i> Username</label>
+          <input type="text" name="username" class="form-control" placeholder="e.g. admin_rahul" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-envelope"></i> Email Address</label>
+          <input type="email" name="email" class="form-control" placeholder="admin@tutorgali.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-lock"></i> Password</label>
+          <input type="password" name="password1" class="form-control" placeholder="Min 8 characters" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-lock"></i> Confirm Password</label>
+          <input type="password" name="password2" class="form-control" placeholder="Re-enter password" required>
+        </div>
+
+        <div style="padding:12px 14px; background:#f0fdf4; border:1px solid #a7f3d0; border-radius:8px; margin-bottom:16px; font-size:0.82rem; color:#065f46;">
+          <i class="fas fa-info-circle"></i>
+          The new admin will be able to: approve/reject tutors, view all bookings, reviews, students, and subscriptions.
+          They will <strong>not</strong> be a superuser.
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+          <i class="fas fa-user-plus"></i> Create Admin Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

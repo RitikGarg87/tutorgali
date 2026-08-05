@@ -1,0 +1,77 @@
+{% extends 'users/base.html' %}
+{% block title %}Student Dashboard — TutorGali{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+
+  <!-- Welcome Banner -->
+  <div class="page-hero" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h2 style="margin-bottom:6px;">
+        <i class="fas fa-hand-wave" style="margin-right:8px;"></i>
+        Welcome back, {{ profile.full_name|default:user.username }}!
+      </h2>
+      <p>Find the perfect tutor near you and start learning today.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.2); border-radius:var(--radius-md); padding:14px 20px; text-align:center;">
+      <div style="font-size:0.78rem; opacity:0.85; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Role</div>
+      <div style="font-size:1rem; font-weight:800;">
+        <i class="fas fa-user-graduate"></i> Student
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section-heading">
+    <i class="fas fa-bolt"></i> Quick Actions
+  </div>
+  <div class="action-grid">
+    <a href="{% url 'browse_tutors' %}" class="action-card">
+      <div class="action-card-icon"><i class="fas fa-search"></i></div>
+      <h3>Find Tutors</h3>
+      <p>Search verified tutors near you by subject, grade &amp; availability</p>
+    </a>
+    <a href="{% url 'student_bookings' %}" class="action-card">
+      <div class="action-card-icon" style="background: linear-gradient(135deg,#10b981,#059669);"><i class="fas fa-calendar-check"></i></div>
+      <h3>My Bookings</h3>
+      <p>View all your tutor requests and their current status</p>
+    </a>
+    <a href="{% url 'profile' %}" class="action-card">
+      <div class="action-card-icon" style="background: linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-user-edit"></i></div>
+      <h3>Edit Profile</h3>
+      <p>Update your personal information and preferences</p>
+    </a>
+  </div>
+
+  <!-- How It Works -->
+  <div class="card mt-3">
+    <div class="card-header">
+      <div class="card-title"><i class="fas fa-info-circle"></i> How TutorGali Works</div>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+      <div style="text-align:center; padding:16px;">
+        <div style="width:52px; height:52px; background:var(--gradient-soft); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:1.3rem; color:var(--primary);">
+          <i class="fas fa-search-location"></i>
+        </div>
+        <h4 style="font-size:0.95rem; margin-bottom:6px;">Search Nearby</h4>
+        <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">Find tutors within your preferred distance using GPS or address</p>
+      </div>
+      <div style="text-align:center; padding:16px;">
+        <div style="width:52px; height:52px; background:var(--gradient-soft); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:1.3rem; color:var(--primary);">
+          <i class="fas fa-paper-plane"></i>
+        </div>
+        <h4 style="font-size:0.95rem; margin-bottom:6px;">Send Request</h4>
+        <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">Contact a tutor with your subject, grade, and preferred time slot</p>
+      </div>
+      <div style="text-align:center; padding:16px;">
+        <div style="width:52px; height:52px; background:var(--gradient-soft); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:1.3rem; color:var(--primary);">
+          <i class="fas fa-phone-alt"></i>
+        </div>
+        <h4 style="font-size:0.95rem; margin-bottom:6px;">Get Connected</h4>
+        <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5;">Once accepted, get the tutor's contact details and start learning</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

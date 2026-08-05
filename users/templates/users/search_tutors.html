@@ -1,0 +1,78 @@
+{% extends 'users/base.html' %}
+{% block title %}Find Tutors{% endblock %}
+{% block content %}
+<div style="background:white;max-width:900px;margin:2rem auto;padding:2rem;border-radius:10px;">
+  <h2>Tutor Search</h2>
+  <form method="POST" id="search-form">
+    {% csrf_token %}
+    <div style="margin-bottom:1em;">
+      <label>Subject:</label>
+      <select name="subject" required>
+        <option value="" hidden>Select subject</option>
+        {% for s in possible_subjects %}
+        <option value="{{ s }}" {% if q.subject == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="margin-bottom:1em;">
+      <label>Tutor Type:</label>
+      <select name="mode" required>
+        <option value="" hidden>Select type</option>
+        <option value="online">Online</option>
+        <option value="tutor_place">At Tutor's Place</option>
+        <option value="student_place">At Student's Place</option>
+      </select>
+    </div>
+    <div style="margin-bottom:1em;">
+      <label>Distance (km):</label>
+      <select name="distance" required>
+        {% for d in possible_distances %}
+        <option value="{{ d }}" {% if q.distance == d %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="margin-bottom:1em;">
+      <label>Preferred Time Slot:</label>
+      <select name="slot" required>
+        <option value="" hidden>Select slot</option>
+        {% for slot in possible_slots %}
+        <option value="{{ slot }}" {% if q.slot == slot %}selected{% endif %}>{{ slot }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <input type="hidden" id="latitude" name="latitude">
+    <input type="hidden" id="longitude" name="longitude">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  <script>
+    // Ask location on submit
+    document.getElementById('search-form').onsubmit = function(e) {
+      if (!document.getElementById('latitude').value) {
+        e.preventDefault();
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          document.getElementById('latitude').value = pos.coords.latitude;
+          document.getElementById('longitude').value = pos.coords.longitude;
+          document.getElementById('search-form').submit();
+        }, function() { alert("Location required!"); });
+      }
+    }
+  </script>
+  {% if tutors %}
+    <hr>
+    <h3>Matching Tutors ({{ tutors|length }})</h3>
+    <ul>
+    {% for t in tutors %}
+      <li>
+        <b>{{ t.profile.full_name }}</b>
+        - {{ t.profile.city }}<br>
+        <small>{{ t.distance|floatformat:2 }} km away</small>
+        <br>
+        <!-- more info/buttons as needed -->
+      </li>
+    {% endfor %}
+    </ul>
+  {% elif tutors is not none %}
+    <p>No tutors found!</p>
+  {% endif %}
+</div>
+{% endblock %}

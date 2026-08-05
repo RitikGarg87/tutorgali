@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django (venv)",
+            "type": "python",
+            "request": "launch",
+            "program": "/Users/ritikgarg/Documents/tutorgali/manage.py",
+            "args": [
+                "runserver",
+                "127.0.0.1:8000"
+            ],
+            "django": true,
+            "justMyCode": true,
+            "python": "/Users/ritikgarg/Documents/tutorgali/env/bin/python",
+        }
+    ]
+}

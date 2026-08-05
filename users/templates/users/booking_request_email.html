@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background-color: #4f46e5; padding: 24px 32px; }
+    .header h1 { color: #ffffff; margin: 0; font-size: 22px; }
+    .body { padding: 32px; color: #333333; }
+    .body p { margin: 0 0 16px; line-height: 1.6; }
+    .detail-box { background: #f0f0ff; border-left: 4px solid #4f46e5; border-radius: 4px; padding: 16px 20px; margin: 20px 0; }
+    .detail-box table { width: 100%; border-collapse: collapse; }
+    .detail-box td { padding: 6px 0; font-size: 14px; color: #444; }
+    .detail-box td:first-child { font-weight: bold; width: 40%; color: #333; }
+    .btn { display: inline-block; margin-top: 8px; padding: 12px 28px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: bold; }
+    .footer { background: #f4f4f4; padding: 16px 32px; text-align: center; font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 TutorGali — New Booking Request</h1>
+    </div>
+    <div class="body">
+      <p>Hi <strong>{{ tutor_name }}</strong>,</p>
+      <p>You have received a new booking request from a student on TutorGali. Here are the details:</p>
+
+      <div class="detail-box">
+        <table>
+          <tr>
+            <td>Student Name</td>
+            <td>{{ student_name }}</td>
+          </tr>
+          <tr>
+            <td>Grade</td>
+            <td>{{ grade }}</td>
+          </tr>
+          <tr>
+            <td>Subject</td>
+            <td>{{ subject }}</td>
+          </tr>
+          <tr>
+            <td>Teaching Mode</td>
+            <td>{{ mode }}</td>
+          </tr>
+          <tr>
+            <td>Preferred Time Slot</td>
+            <td>{{ time_slot }}</td>
+          </tr>
+          {% if price %}
+          <tr>
+            <td>Rate (₹/hr)</td>
+            <td>₹{{ price }}</td>
+          </tr>
+          {% endif %}
+          {% if message %}
+          <tr>
+            <td>Message</td>
+            <td>{{ message }}</td>
+          </tr>
+          {% endif %}
+        </table>
+      </div>
+
+      <p>Log in to your TutorGali account to accept or reject this request.</p>
+      <a href="{{ requests_url }}" class="btn">View Booking Requests</a>
+
+      <p style="margin-top: 24px; font-size: 13px; color: #888;">
+        If you did not expect this email, you can safely ignore it.
+      </p>
+    </div>
+    <div class="footer">
+      &copy; TutorGali &mdash; Connecting Students with the Right Tutors
+    </div>
+  </div>
+</body>
+</html>

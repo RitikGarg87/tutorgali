@@ -1,0 +1,69 @@
+{% extends 'users/base.html' %}
+{% block title %}Set Availability — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  .slot-label {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); cursor: pointer;
+    transition: var(--transition); background: var(--bg-input);
+    font-size: 0.9rem; font-weight: 500; color: var(--text-primary);
+    min-height: 52px;
+  }
+  .slot-label:hover { border-color: var(--primary); background: var(--gradient-soft); }
+  .slot-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; }
+  .slot-label.selected { border-color: var(--primary); background: var(--gradient-soft); color: var(--primary); font-weight: 600; }
+  .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  @media (max-width: 480px) { .slots-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper-md">
+
+  <!-- Hero -->
+  <div class="page-hero" style="margin-bottom:24px;">
+    <h2><i class="fas fa-calendar-alt" style="margin-right:8px;"></i>Set Your Availability</h2>
+    <p>Select your available time slots for Monday to Saturday. Sunday is automatically off.</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="card mb-3">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-clock"></i> Available Time Slots</div>
+        <div style="font-size:0.82rem; color:var(--text-secondary);">Click to select / deselect</div>
+      </div>
+
+      <div class="slots-grid">
+        {% for slot, label in time_slots %}
+          <label class="slot-label {% if slot in selected_slots %}selected{% endif %}">
+            <input type="checkbox" name="time_slots" value="{{ slot }}"
+                   {% if slot in selected_slots %}checked{% endif %}
+                   onchange="this.parentElement.classList.toggle('selected', this.checked)">
+            <i class="fas fa-clock" style="color:var(--primary); font-size:0.85rem;"></i>
+            {{ label }}
+          </label>
+        {% endfor %}
+      </div>
+
+      <div class="alert alert-info mt-3">
+        <i class="fas fa-info-circle"></i>
+        <span>Selected slots apply to <strong>Monday through Saturday</strong>. Sunday is automatically set as off day. You can update anytime.</span>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fas fa-save"></i> Save Availability
+      </button>
+      <a href="{% url 'tutor_dashboard' %}" class="btn btn-secondary btn-lg">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

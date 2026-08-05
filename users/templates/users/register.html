@@ -1,0 +1,419 @@
+{% extends 'users/base.html' %}
+{% block title %}Sign Up — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: var(--bg-page); }
+  .auth-page { min-height: calc(100vh - 68px); display: flex; align-items: stretch; }
+  .auth-brand {
+    flex: 0 0 380px;
+    background: var(--gradient);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 40px; color: #fff; text-align: center;
+  }
+  .auth-brand-icon { width: 80px; height: 80px; background: rgba(255,255,255,0.18); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; margin-bottom: 24px; }
+  .auth-brand h2 { font-size: 1.7rem; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+  .auth-brand p  { font-size: 0.93rem; opacity: 0.88; line-height: 1.7; }
+  .auth-brand-steps { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; text-align: left; width: 100%; }
+  .auth-brand-step  { display: flex; align-items: flex-start; gap: 12px; font-size: 0.88rem; opacity: 0.92; }
+  .step-num { width: 28px; height: 28px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; }
+  .auth-form-panel { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 40px 40px 60px; background: var(--bg-page); overflow-y: auto; }
+  .auth-form-box { width: 100%; max-width: 520px; }
+  .auth-form-header { margin-bottom: 24px; }
+  .auth-form-header h1 { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+  .auth-form-header p  { color: var(--text-secondary); font-size: 0.9rem; }
+  .auth-card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-md); padding: 32px; }
+
+  /* Role selector */
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .role-option { position: relative; }
+  .role-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .role-label {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 18px 12px; border: 2px solid var(--border); border-radius: var(--radius-md);
+    cursor: pointer; transition: var(--transition); text-align: center;
+    background: var(--bg-input);
+  }
+  .role-label i { font-size: 1.8rem; color: var(--text-muted); transition: var(--transition); }
+  .role-label span { font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); }
+  .role-option input:checked + .role-label {
+    border-color: var(--primary); background: var(--gradient-soft);
+  }
+  .role-option input:checked + .role-label i { color: var(--primary); }
+  .role-option input:checked + .role-label span { color: var(--primary); }
+  .role-label:hover { border-color: var(--primary); background: var(--gradient-soft); }
+
+  /* Form fields */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+  .form-group label i { color: var(--primary); margin-right: 4px; }
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"],
+  .form-group select {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 0.9rem; color: var(--text-primary);
+    background: var(--bg-input); transition: var(--transition); min-height: 44px;
+  }
+  .form-group input:focus,
+  .form-group select:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+  .form-group input::placeholder { color: var(--text-muted); }
+  .field-error { margin-top: 4px; font-size: 0.78rem; color: var(--danger); display: flex; align-items: center; gap: 4px; }
+  .form-hint  { margin-top: 4px; font-size: 0.78rem; color: var(--text-secondary); }
+
+  /* OTP section */
+  .mobile-row { display: flex; gap: 8px; align-items: flex-start; }
+  .country-code {
+    flex: 0 0 52px; height: 44px; background: var(--bg-input); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.88rem; color: var(--text-primary); flex-shrink: 0;
+  }
+  .mobile-row .form-group { flex: 1; margin-bottom: 0; }
+  .btn-send-otp {
+    flex: 0 0 100px; height: 44px; background: var(--gradient); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; transition: var(--transition); white-space: nowrap;
+  }
+  .btn-send-otp:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+  .btn-send-otp:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .otp-section {
+    margin-top: 12px; padding: 16px; background: var(--gradient-soft);
+    border: 1.5px solid rgba(102,126,234,0.2); border-radius: var(--radius-sm);
+  }
+  .otp-row { display: flex; gap: 8px; align-items: center; }
+  .otp-input {
+    flex: 1; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 1.1rem; font-weight: 700; letter-spacing: 6px; text-align: center;
+    background: #fff; transition: var(--transition); min-height: 44px;
+  }
+  .otp-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+  .btn-verify-otp {
+    flex: 0 0 90px; height: 44px; background: var(--success); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; transition: var(--transition);
+  }
+  .btn-verify-otp:hover { background: #059669; }
+  .otp-meta { display: flex; justify-content: space-between; margin-top: 8px; }
+  .otp-msg   { font-size: 0.8rem; }
+  .otp-timer { font-size: 0.8rem; color: var(--text-secondary); }
+
+  .verified-badge {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    padding: 10px 14px; background: var(--success-bg); border: 1px solid var(--success-border);
+    border-radius: var(--radius-sm); color: #065f46; font-size: 0.88rem; font-weight: 600;
+  }
+
+  .btn-submit {
+    width: 100%; padding: 14px; background: var(--gradient); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-primary);
+    min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 8px;
+  }
+  .btn-submit:hover:not(:disabled) { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(102,126,234,0.38); }
+  .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  .terms-text { text-align: center; margin-top: 14px; font-size: 0.8rem; color: var(--text-secondary); }
+  .terms-text a { color: var(--primary); font-weight: 600; }
+  .auth-footer { text-align: center; margin-top: 20px; font-size: 0.88rem; color: var(--text-secondary); }
+  .auth-footer a { color: var(--primary); font-weight: 700; }
+
+  @media (max-width: 900px) { .auth-brand { flex: 0 0 300px; } }
+  @media (max-width: 768px) {
+    .auth-page { flex-direction: column; }
+    .auth-brand { flex: none; padding: 32px 24px; }
+    .auth-brand h2 { font-size: 1.4rem; }
+    .auth-brand-steps { display: none; }
+    .auth-form-panel { padding: 24px 16px 48px; }
+    .auth-card { padding: 24px 18px; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+  <!-- Left: Brand Panel -->
+  <div class="auth-brand">
+    <div class="auth-brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <h2>Join TutorGali Today</h2>
+    <p>Create your free account and start your learning journey.</p>
+    <div class="auth-brand-steps">
+      <div class="auth-brand-step">
+        <div class="step-num">1</div>
+        <span>Create your account with SMS OTP verification</span>
+      </div>
+      <div class="auth-brand-step">
+        <div class="step-num">2</div>
+        <span>Complete your profile (tutors) or search tutors (students)</span>
+      </div>
+      <div class="auth-brand-step">
+        <div class="step-num">3</div>
+        <span>Connect, book, and start learning!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Form Panel -->
+  <div class="auth-form-panel">
+    <div class="auth-form-box">
+      <div class="auth-form-header">
+        <h1>Create your account</h1>
+        <p>Fill in the details below to get started</p>
+      </div>
+
+      <div class="auth-card">
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ form.non_field_errors.0 }}</span>
+          </div>
+        {% endif %}
+
+        <form method="post" id="signupForm">
+          {% csrf_token %}
+
+          <!-- Role Selection -->
+          <div class="form-group">
+            <label>I am a…</label>
+            <div class="role-grid">
+              <div class="role-option">
+                <input type="radio" name="role" value="tutor" id="role_tutor" checked>
+                <label class="role-label" for="role_tutor">
+                  <i class="fas fa-chalkboard-teacher"></i>
+                  <span>Tutor</span>
+                </label>
+              </div>
+              <div class="role-option">
+                <input type="radio" name="role" value="student" id="role_student">
+                <label class="role-label" for="role_student">
+                  <i class="fas fa-user-graduate"></i>
+                  <span>Student / Parent</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Name -->
+          <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}">
+              <i class="fas fa-user"></i> Full Name *
+            </label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.full_name.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Email + Gender row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="{{ form.email.id_for_label }}">
+                <i class="fas fa-envelope"></i> Email *
+              </label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.gender.id_for_label }}">
+                <i class="fas fa-venus-mars"></i> Gender *
+              </label>
+              {{ form.gender }}
+              {% if form.gender.errors %}
+                <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.gender.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Mobile + OTP -->
+          <div class="form-group">
+            <label><i class="fas fa-mobile-alt" style="color:var(--primary);"></i> Mobile Number *</label>
+            <div class="mobile-row">
+              <div class="country-code">+91</div>
+              <div class="form-group" style="flex:1; margin-bottom:0;">
+                {{ form.mobile_number }}
+              </div>
+              <!-- OTP temporaily disabled - Button hidden
+              <button type="button" id="sendOtpBtn" onclick="sendOtp()" class="btn-send-otp">
+                <i class="fas fa-sms"></i> Send OTP
+              </button>
+              -->
+            </div>
+            {% if form.mobile_number.errors %}
+              <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.mobile_number.errors.0 }}</div>
+            {% endif %}
+      
+            <!-- OTP Input Section - disabled
+            <div id="otpSection" class="otp-section" style="display:none;">
+              <div class="otp-row">
+                <input type="text" id="otpInput" maxlength="6" placeholder="6-digit OTP" class="otp-input">
+                <button type="button" onclick="verifyOtp()" class="btn-verify-otp">Verify</button>
+              </div>
+              <div class="otp-meta">
+                <span id="otpMsg" class="otp-msg"></span>
+                <span id="resendTimer" class="otp-timer"></span>
+              </div>
+            </div>
+            <div id="verifiedBadge" class="verified-badge" style="display:none;">
+              <i class="fas fa-check-circle" style="color:var(--success);"></i>
+              Mobile number verified successfully!
+            </div>
+          -->
+          </div>
+
+          <!-- Passwords -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="{{ form.password1.id_for_label }}">
+                <i class="fas fa-lock"></i> Password *
+              </label>
+              {{ form.password1 }}
+              <div class="form-hint">Minimum 8 characters</div>
+              {% if form.password1.errors %}
+                <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.password2.id_for_label }}">
+                <i class="fas fa-lock"></i> Confirm Password *
+              </label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}
+                <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn-submit">
+            <i class="fas fa-user-check"></i> Create Account
+          </button>
+
+          <p class="terms-text">
+            By signing up, you agree to our <a href="#">Terms of Use</a> &amp; <a href="#">Privacy Policy</a>
+          </p>
+        </form>
+
+        <div class="auth-footer">
+          Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var csrfToken = '{{ csrf_token }}';
+var resendInterval = null;
+
+function sendOtp() {
+  var mobile = document.getElementById('{{ form.mobile_number.id_for_label }}').value.trim();
+  var btn = document.getElementById('sendOtpBtn');
+  var otpMsg = document.getElementById('otpMsg');
+
+  if (!mobile || mobile.length !== 10 || !/^[6-9]/.test(mobile)) {
+    document.getElementById('otpSection').style.display = 'block';
+    otpMsg.style.color = 'var(--danger)';
+    otpMsg.textContent = 'Enter a valid 10-digit mobile number first.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  otpMsg.textContent = '';
+
+  fetch('{% url "send_otp" %}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+    body: 'mobile_number=' + encodeURIComponent(mobile),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    document.getElementById('otpSection').style.display = 'block';
+    if (data.success) {
+      otpMsg.style.color = 'var(--success)';
+      otpMsg.textContent = data.message;
+      btn.textContent = 'Resend OTP';
+      startResendTimer(30);
+    } else {
+      otpMsg.style.color = 'var(--danger)';
+      otpMsg.textContent = data.error;
+      btn.disabled = false;
+      btn.textContent = 'Send OTP';
+    }
+  })
+  .catch(function() {
+    otpMsg.style.color = 'var(--danger)';
+    otpMsg.textContent = 'Network error. Please try again.';
+    btn.disabled = false;
+    btn.textContent = 'Send OTP';
+  });
+}
+
+function verifyOtp() {
+  var mobile  = document.getElementById('{{ form.mobile_number.id_for_label }}').value.trim();
+  var otp     = document.getElementById('otpInput').value.trim();
+  var otpMsg  = document.getElementById('otpMsg');
+
+  if (!otp || otp.length !== 6) {
+    otpMsg.style.color = 'var(--danger)';
+    otpMsg.textContent = 'Please enter the 6-digit OTP.';
+    return;
+  }
+
+  otpMsg.style.color = 'var(--text-secondary)';
+  otpMsg.textContent = 'Verifying…';
+
+  fetch('{% url "verify_otp" %}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+    body: 'mobile_number=' + encodeURIComponent(mobile) + '&otp=' + encodeURIComponent(otp),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      document.getElementById('otpSection').style.display = 'none';
+      document.getElementById('verifiedBadge').style.display = 'flex';
+      document.getElementById('sendOtpBtn').style.display = 'none';
+      document.getElementById('{{ form.mobile_number.id_for_label }}').readOnly = true;
+      var submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = false;
+      if (resendInterval) clearInterval(resendInterval);
+    } else {
+      otpMsg.style.color = 'var(--danger)';
+      otpMsg.textContent = data.error;
+    }
+  })
+  .catch(function() {
+    otpMsg.style.color = 'var(--danger)';
+    otpMsg.textContent = 'Network error. Please try again.';
+  });
+}
+
+function startResendTimer(seconds) {
+  var timerEl = document.getElementById('resendTimer');
+  var btn = document.getElementById('sendOtpBtn');
+  var remaining = seconds;
+  if (resendInterval) clearInterval(resendInterval);
+  btn.disabled = true;
+  resendInterval = setInterval(function() {
+    timerEl.textContent = 'Resend in ' + remaining + 's';
+    remaining--;
+    if (remaining < 0) {
+      clearInterval(resendInterval);
+      timerEl.textContent = '';
+      btn.disabled = false;
+    }
+  }, 1000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Reviews{% endblock %}
+{% block page_title %}Reviews Management{% endblock %}
+{% block nav_reviews %}active{% endblock %}
+
+{% block content %}
+
+<!-- Summary -->
+<div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+  <div class="card" style="padding:16px 24px; display:flex; align-items:center; gap:12px;">
+    <span style="font-size:2rem; color:#f59e0b;">★</span>
+    <div>
+      <div style="font-size:1.4rem; font-weight:900;">{{ avg|default:"—" }}</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Avg Rating</div>
+    </div>
+  </div>
+  <div class="card" style="padding:16px 24px; display:flex; align-items:center; gap:12px;">
+    <span style="font-size:2rem; color:var(--primary);"><i class="fas fa-comments"></i></span>
+    <div>
+      <div style="font-size:1.4rem; font-weight:900;">{{ total }}</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Total Reviews</div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-tabs">
+  <a href="{% url 'admin_panel_reviews' %}" class="filter-tab {% if not rating %}active{% endif %}">All Stars</a>
+  {% for s in "54321" %}
+    <a href="?rating={{ s }}" class="filter-tab {% if rating == s %}active{% endif %}">{{ s }} ★</a>
+  {% endfor %}
+</div>
+
+<form method="get" class="search-bar">
+  {% if rating %}<input type="hidden" name="rating" value="{{ rating }}">{% endif %}
+  <input type="text" name="q" value="{{ search }}" placeholder="Search by tutor, student, comment..." class="search-input">
+  <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+  {% if search %}<a href="?{% if rating %}rating={{ rating }}{% endif %}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="card-header"><span><i class="fas fa-star"></i> {{ total }} Review{{ total|pluralize }}</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Student</th><th>Tutor</th><th>Rating</th><th>Comment</th><th>Date</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for r in reviews %}
+          <tr>
+            <td style="font-weight:600;">{{ r.student.full_name }}</td>
+            <td>{{ r.tutor.full_name }}</td>
+            <td>
+              <span style="color:#f59e0b; font-weight:700; font-size:1rem;">
+                {% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}
+              </span>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:4px;">{{ r.rating }}/5</span>
+            </td>
+            <td style="color:var(--text-muted); max-width:250px; font-size:0.85rem;">{{ r.comment|default:"—"|truncatechars:60 }}</td>
+            <td style="color:var(--text-muted); font-size:0.8rem; white-space:nowrap;">{{ r.created_at|date:"d M Y" }}</td>
+            <td>
+              <form method="post" action="{% url 'admin_panel_delete_review' r.id %}"
+                    onsubmit="return confirm('Delete this review?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">No reviews found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="pagination-wrap">
+    {% if page_obj.has_previous %}
+      <a href="?rating={{ rating }}&q={{ search }}&page={{ page_obj.previous_page_number }}" class="page-btn">‹ Prev</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="page-btn active">{{ num }}</span>
+      {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?rating={{ rating }}&q={{ search }}&page={{ num }}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a href="?rating={{ rating }}&q={{ search }}&page={{ page_obj.next_page_number }}" class="page-btn">Next ›</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

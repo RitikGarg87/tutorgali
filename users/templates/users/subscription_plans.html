@@ -1,0 +1,72 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}Subscription Plans — TutorGali{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/subscription_plans.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="subscription-page">
+  <div class="subscription-container">
+
+    <div class="subscription-hero text-center">
+      <h2 class="subscription-title">Choose Your Subscription</h2>
+      <p class="subscription-subtitle">
+        Buy a subscription to view student contact details and connect with them directly via call or WhatsApp.
+      </p>
+    </div>
+
+    {% if active_subscription %}
+      <div class="active-subscription-box">
+        <div class="active-subscription-badge">
+          <i class="fas fa-crown"></i> Active Plan
+        </div>
+        <div class="active-subscription-content">
+          <h4>{{ active_subscription.plan.name }}</h4>
+          <p>
+            {{ active_subscription.plan.duration_months }} month{% if active_subscription.plan.duration_months > 1 %}s{% endif %}
+            &nbsp;·&nbsp; Valid till <strong>{{ active_subscription.end_date }}</strong>
+          </p>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if plans %}
+      <div class="subscription-grid">
+        {% for plan in plans %}
+          <div class="subscription-card {% if forloop.counter == 2 %}subscription-card-featured{% endif %}">
+            {% if forloop.counter == 2 %}
+              <div class="popular-badge">Most Popular</div>
+            {% endif %}
+            <div class="subscription-card-body">
+              <h5 class="plan-name">{{ plan.name }}</h5>
+              <div class="plan-price-wrap">
+                <span class="currency-symbol">₹</span>
+                <span class="plan-price">{{ plan.price_inr }}</span>
+              </div>
+              <p class="plan-duration">Valid for {{ plan.duration_months }} month{% if plan.duration_months > 1 %}s{% endif %}.</p>
+              <ul class="plan-features">
+                <li><i class="fas fa-check-circle"></i> View student mobile numbers</li>
+                <li><i class="fas fa-check-circle"></i> Call and WhatsApp students directly</li>
+                <li><i class="fas fa-check-circle"></i> No per-lead extra charges</li>
+              </ul>
+              <div class="plan-action mt-auto">
+                <a href="{% url 'create_subscription_payment' plan.id %}" class="subscribe-btn">
+                  <i class="fas fa-crown"></i> Subscribe Now
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-plans-box">
+        <p class="no-plans-title">No plans configured yet</p>
+        <p class="no-plans-text">Please contact admin to add subscription plans.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Bookings{% endblock %}
+{% block page_title %}Bookings Management{% endblock %}
+{% block nav_bookings %}active{% endblock %}
+
+{% block content %}
+
+<div class="filter-tabs">
+  <a href="{% url 'admin_panel_bookings' %}" class="filter-tab {% if not status_filter %}active{% endif %}">All ({{ total }})</a>
+  <a href="?status=pending"  class="filter-tab {% if status_filter == 'pending'  %}active{% endif %}">⏳ Pending</a>
+  <a href="?status=accepted" class="filter-tab {% if status_filter == 'accepted' %}active{% endif %}">✅ Accepted</a>
+  <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">❌ Rejected</a>
+</div>
+
+<form method="get" class="search-bar">
+  {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+  <input type="text" name="q" value="{{ search }}" placeholder="Search by student, tutor, subject..." class="search-input">
+  <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+  {% if search %}<a href="?{% if status_filter %}status={{ status_filter }}{% endif %}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="card-header"><span><i class="fas fa-calendar-check"></i> {{ total }} Booking{{ total|pluralize }}</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Tutor</th>
+          <th>Subject</th>
+          <th>Grade</th>
+          <th>Mode</th>
+          <th>Price</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+          <tr>
+            <td style="font-weight:600;">{{ b.student.full_name|default:"—" }}</td>
+            <td>{{ b.tutor.full_name|default:"—" }}</td>
+            <td>{{ b.subject|default:"—" }}</td>
+            <td>{{ b.grade|cut:"grade_"|cut:"nursery_to_"|title|default:"—" }}</td>
+            <td>
+              {% if b.mode == 'online' %}<span class="badge badge-info">Online</span>
+              {% elif b.mode == 'student_home' %}<span class="badge badge-primary">Student Home</span>
+              {% elif b.mode == 'my_home' %}<span class="badge badge-muted">Tutor Home</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>{% if b.price %}<strong style="color:var(--primary);">₹{{ b.price }}/hr</strong>{% else %}—{% endif %}</td>
+            <td>
+              {% if b.status == 'accepted' %}<span class="badge badge-success">Accepted</span>
+              {% elif b.status == 'pending'  %}<span class="badge badge-warning">Pending</span>
+              {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+            </td>
+            <td style="color:var(--text-muted); font-size:0.8rem; white-space:nowrap;">{{ b.created_at|date:"d M Y" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align:center; padding:32px; color:var(--text-muted);">No bookings found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="pagination-wrap">
+    {% if page_obj.has_previous %}
+      <a href="?status={{ status_filter }}&q={{ search }}&page={{ page_obj.previous_page_number }}" class="page-btn">‹ Prev</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="page-btn active">{{ num }}</span>
+      {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?status={{ status_filter }}&q={{ search }}&page={{ num }}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a href="?status={{ status_filter }}&q={{ search }}&page={{ page_obj.next_page_number }}" class="page-btn">Next ›</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

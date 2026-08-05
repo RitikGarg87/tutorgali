@@ -1,0 +1,224 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}{{ tutor.full_name }} — Tutor Detail{% endblock %}
+{% block page_title %}Tutor Detail{% endblock %}
+{% block nav_tutors %}active{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+  <a href="{% url 'admin_panel_tutors' %}" class="btn btn-secondary btn-sm">
+    <i class="fas fa-arrow-left"></i> Back to Tutors
+  </a>
+  <h2 style="font-size:1.1rem; font-weight:800; color:var(--text);">{{ tutor.full_name }}</h2>
+  {% if tutor.verification_status == 'approved' %}
+    <span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified Tutor</span>
+  {% elif tutor.verification_status == 'pending' %}
+    <span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>
+  {% else %}
+    <span class="badge badge-danger"><i class="fas fa-times-circle"></i> Rejected</span>
+  {% endif %}
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+  <!-- Left: Profile Info -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Basic Info -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-user"></i> Profile Information</div>
+      <div class="card-body">
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+          <div style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; font-size:1.6rem; font-weight:800; display:flex; align-items:center; justify-content:center;">
+            {{ tutor.full_name.0|upper }}
+          </div>
+          <div>
+            <div style="font-size:1.1rem; font-weight:800;">{{ tutor.full_name }}</div>
+            <div style="font-size:0.82rem; color:var(--text-muted);">{{ tutor.user.email }}</div>
+            <div style="font-size:0.82rem; color:var(--text-muted);">{{ tutor.mobile_number|default:"No mobile" }}</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Gender</span><strong>{{ tutor.gender|title|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Experience</span><strong>{{ tutor.experience_years|default:"—" }} yrs</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Qualification</span><strong>{{ tutor.qualification|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Institute</span><strong>{{ tutor.education_institute|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">City</span><strong>{{ tutor.city|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">State</span><strong>{{ tutor.state|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Teaching Mode</span><strong>{{ tutor.teaching_mode|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Languages</span><strong>{{ tutor.languages|default:"—" }}</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Free Contacts Used</span><strong>{{ tutor.free_contacts_used }}/5</strong></div>
+          <div><span style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px;">Avg Rating</span><strong>{{ tutor.avg_rating|default:"No reviews" }}{% if tutor.avg_rating %} ★ ({{ tutor.review_count }} reviews){% endif %}</strong></div>
+        </div>
+        {% if tutor.bio %}
+          <div style="margin-top:14px; padding:12px; background:#f8fafc; border-radius:8px; font-size:0.85rem; color:var(--text); line-height:1.6; border-left:3px solid var(--primary);">
+            {{ tutor.bio }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-file-alt"></i> Submitted Documents</div>
+      <div class="card-body">
+        {% if tutor.education_certificate %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#f0fdf4; border:1px solid #a7f3d0; border-radius:8px; margin-bottom:10px;">
+            <span style="font-size:0.88rem; font-weight:600; color:#065f46;"><i class="fas fa-graduation-cap"></i> Education Certificate</span>
+            <a href="{{ tutor.education_certificate.url }}" target="_blank" class="btn btn-sm btn-success">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </div>
+        {% else %}
+          <div style="padding:10px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; margin-bottom:10px; font-size:0.85rem; color:#991b1b;">
+            <i class="fas fa-times-circle"></i> Education certificate not uploaded
+          </div>
+        {% endif %}
+
+        {% if tutor.id_proof %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#f0fdf4; border:1px solid #a7f3d0; border-radius:8px;">
+            <span style="font-size:0.88rem; font-weight:600; color:#065f46;"><i class="fas fa-id-card"></i> ID Proof</span>
+            <a href="{{ tutor.id_proof.url }}" target="_blank" class="btn btn-sm btn-success">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </div>
+        {% else %}
+          <div style="padding:10px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; font-size:0.85rem; color:#991b1b;">
+            <i class="fas fa-times-circle"></i> ID proof not uploaded
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Grade Rates -->
+    {% if grade_rates %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-book"></i> Grades & Subjects</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Grade</th><th>Subjects</th><th>Online</th><th>Student Home</th><th>My Home</th></tr></thead>
+          <tbody>
+            {% for gr in grade_rates %}
+              <tr>
+                <td style="font-weight:600; white-space:nowrap;">{{ gr.get_grade_display }}</td>
+                <td style="color:var(--text-muted); font-size:0.82rem;">{{ gr.subjects|truncatechars:40 }}</td>
+                <td>{% if gr.rate_online %}₹{{ gr.rate_online }}{% else %}—{% endif %}</td>
+                <td>{% if gr.rate_student_home %}₹{{ gr.rate_student_home }}{% else %}—{% endif %}</td>
+                <td>{% if gr.rate_my_home %}₹{{ gr.rate_my_home }}{% else %}—{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Right: Verification Action + Reviews -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Verification Action -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-user-check"></i> Verification Action</div>
+      <div class="card-body">
+
+        <!-- Current Status -->
+        <div style="padding:14px; border-radius:10px; margin-bottom:20px; text-align:center;
+          {% if tutor.verification_status == 'approved' %}background:#ecfdf5; border:1px solid #a7f3d0;
+          {% elif tutor.verification_status == 'rejected' %}background:#fef2f2; border:1px solid #fecaca;
+          {% else %}background:#fffbeb; border:1px solid #fde68a;{% endif %}">
+          <div style="font-size:2rem; margin-bottom:6px;">
+            {% if tutor.verification_status == 'approved' %}✅
+            {% elif tutor.verification_status == 'rejected' %}❌
+            {% else %}⏳{% endif %}
+          </div>
+          <div style="font-weight:700; font-size:0.95rem;
+            {% if tutor.verification_status == 'approved' %}color:#065f46;
+            {% elif tutor.verification_status == 'rejected' %}color:#991b1b;
+            {% else %}color:#92400e;{% endif %}">
+            {{ tutor.verification_status|title }}
+          </div>
+          {% if tutor.verification_notes %}
+            <div style="margin-top:8px; font-size:0.82rem; color:#92400e; background:#fef3c7; padding:8px; border-radius:6px;">
+              <strong>Rejection reason:</strong> {{ tutor.verification_notes }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Approve -->
+        {% if tutor.verification_status != 'approved' %}
+          <form method="post" style="margin-bottom:12px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approve">
+            <button type="submit" class="btn btn-success" style="width:100%; justify-content:center;"
+                    onclick="return confirm('Approve {{ tutor.full_name }} as a verified tutor?')">
+              <i class="fas fa-check-circle"></i> Approve Tutor
+            </button>
+          </form>
+        {% endif %}
+
+        <!-- Reject -->
+        {% if tutor.verification_status != 'rejected' %}
+          <form method="post" style="margin-bottom:12px;" id="rejectForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <div style="margin-bottom:8px;">
+              <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:5px;">Rejection Reason</label>
+              <textarea name="notes" rows="3" class="form-control" placeholder="Explain why the documents are rejected..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger" style="width:100%; justify-content:center;">
+              <i class="fas fa-times-circle"></i> Reject Verification
+            </button>
+          </form>
+        {% endif %}
+
+        <!-- Set Pending -->
+        {% if tutor.verification_status != 'pending' %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="pending">
+            <button type="submit" class="btn btn-secondary" style="width:100%; justify-content:center;">
+              <i class="fas fa-undo"></i> Set Back to Pending
+            </button>
+          </form>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="card">
+      <div class="card-header">
+        <span><i class="fas fa-star"></i> Reviews ({{ reviews.count }})</span>
+        {% if tutor.avg_rating %}
+          <span style="color:#f59e0b; font-weight:800;">★ {{ tutor.avg_rating }}/5</span>
+        {% endif %}
+      </div>
+      {% if reviews %}
+        <div style="max-height:400px; overflow-y:auto;">
+          {% for r in reviews %}
+            <div style="padding:14px 16px; border-bottom:1px solid var(--border); display:flex; gap:10px;">
+              <div class="avatar" style="width:32px; height:32px; font-size:0.8rem; flex-shrink:0;">{{ r.student.full_name.0|upper }}</div>
+              <div style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <span style="font-size:0.85rem; font-weight:700;">{{ r.student.full_name }}</span>
+                  <span style="color:#f59e0b; font-size:0.85rem;">{% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}</span>
+                </div>
+                {% if r.comment %}
+                  <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5; margin:0;">{{ r.comment }}</p>
+                {% endif %}
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">{{ r.created_at|date:"d M Y" }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card-body" style="text-align:center; color:var(--text-muted);">No reviews yet</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

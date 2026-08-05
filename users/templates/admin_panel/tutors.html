@@ -1,0 +1,104 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Tutors{% endblock %}
+{% block page_title %}Tutors Management{% endblock %}
+{% block nav_tutors %}active{% endblock %}
+
+{% block content %}
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+  <a href="{% url 'admin_panel_tutors' %}" class="filter-tab {% if not status_filter %}active{% endif %}">All ({{ total }})</a>
+  <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">⏳ Pending</a>
+  <a href="?status=approved" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">✅ Approved</a>
+  <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">❌ Rejected</a>
+</div>
+
+<!-- Search -->
+<form method="get" class="search-bar">
+  {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+  <input type="text" name="q" value="{{ search }}" placeholder="Search by name, email, city..." class="search-input">
+  <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+  {% if search %}<a href="?{% if status_filter %}status={{ status_filter }}{% endif %}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="card-header">
+    <span><i class="fas fa-chalkboard-teacher"></i> {{ total }} Tutor{{ total|pluralize }}</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tutor</th>
+          <th>Mobile</th>
+          <th>City</th>
+          <th>Experience</th>
+          <th>Profile</th>
+          <th>Verification</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tutor in tutors %}
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="avatar">{{ tutor.full_name.0|upper|default:"?" }}</div>
+                <div>
+                  <div style="font-weight:700;">{{ tutor.full_name|default:"—" }}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">{{ tutor.user.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ tutor.mobile_number|default:"—" }}</td>
+            <td>{{ tutor.city|default:"—" }}{% if tutor.state %}, {{ tutor.state }}{% endif %}</td>
+            <td>{{ tutor.experience_years|default:"—" }} yrs</td>
+            <td>
+              {% if tutor.profile_completed %}
+                <span class="badge badge-success">Complete</span>
+              {% else %}
+                <span class="badge badge-muted">Incomplete</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if tutor.verification_status == 'approved' %}
+                <span class="badge badge-success"><i class="fas fa-check-circle"></i> Approved</span>
+              {% elif tutor.verification_status == 'pending' %}
+                <span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>
+              {% else %}
+                <span class="badge badge-danger"><i class="fas fa-times-circle"></i> Rejected</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'admin_panel_tutor_detail' tutor.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> View
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted);">No tutors found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="pagination-wrap">
+    {% if page_obj.has_previous %}
+      <a href="?status={{ status_filter }}&q={{ search }}&page={{ page_obj.previous_page_number }}" class="page-btn">‹ Prev</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="page-btn active">{{ num }}</span>
+      {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?status={{ status_filter }}&q={{ search }}&page={{ num }}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a href="?status={{ status_filter }}&q={{ search }}&page={{ page_obj.next_page_number }}" class="page-btn">Next ›</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

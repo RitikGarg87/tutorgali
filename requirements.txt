@@ -1,0 +1,30 @@
+# TutorGali — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core Framework
+Django==6.0.7
+asgiref==3.11.1
+sqlparse==0.5.5
+
+# Production WSGI server
+gunicorn==23.0.0
+
+# Environment variable management (.env file support)
+python-decouple==3.8
+
+# Payment Gateway
+razorpay==2.0.1
+
+# HTTP requests (used for Fast2SMS OTP API)
+requests==2.34.2
+urllib3==2.7.0
+
+# Geocoding (tutor location)
+geopy==2.4.1
+geographiclib==2.1
+
+# SSL / HTTP
+certifi==2026.6.17
+charset-normalizer==3.4.9
+idna==3.18
+python-decouple==3.8

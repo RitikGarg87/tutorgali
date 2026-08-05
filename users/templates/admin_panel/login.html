@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — TutorGali</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .login-card {
+      background: #fff; border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+      width: 100%; max-width: 420px; padding: 40px 36px;
+      animation: slideUp 0.4s ease-out;
+    }
+    @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    .login-logo {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; color: #fff; margin: 0 auto 20px;
+      box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+    }
+    h1 { text-align: center; font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 4px; }
+    .subtitle { text-align: center; font-size: 0.85rem; color: #6b7280; margin-bottom: 28px; }
+    .alert {
+      padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;
+      font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 8px;
+      background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+    }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    input {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-family: inherit; font-size: 0.92rem; color: #111827; background: #f9fafb;
+      transition: all 0.2s; min-height: 44px;
+    }
+    input:focus { outline: none; border-color: #667eea; background: #fff; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+    .btn-login {
+      width: 100%; padding: 13px; background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; border: none; border-radius: 8px; font-family: inherit;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(102,126,234,0.35); min-height: 50px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-login:hover { opacity: 0.92; transform: translateY(-2px); }
+    .back-link { text-align: center; margin-top: 20px; font-size: 0.82rem; color: #6b7280; }
+    .back-link a { color: #667eea; font-weight: 600; text-decoration: none; }
+    .security-note {
+      margin-top: 24px; padding: 12px 14px; background: #f0f9ff;
+      border: 1px solid #bae6fd; border-radius: 8px;
+      font-size: 0.78rem; color: #0369a1; display: flex; align-items: center; gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo"><i class="fas fa-shield-alt"></i></div>
+    <h1>Admin Login</h1>
+    <p class="subtitle">TutorGali Admin Panel — Restricted Access</p>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label><i class="fas fa-user"></i> Username</label>
+        <input type="text" name="username" placeholder="Admin username" autofocus required>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" name="password" placeholder="Admin password" required>
+      </div>
+      <button type="submit" class="btn-login">
+        <i class="fas fa-sign-in-alt"></i> Login to Admin Panel
+      </button>
+    </form>
+
+    <div class="security-note">
+      <i class="fas fa-info-circle"></i>
+      Only staff accounts can access this panel. Regular users will be denied.
+    </div>
+
+    <div class="back-link">
+      <a href="{% url 'login' %}">← Back to main site</a>
+    </div>
+  </div>
+</body>
+</html>
