@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.urls import path, reverse_lazy
 
 urlpatterns = [
+    path('', views.CustomLoginView.as_view(), name='login'),
     path('register/', views.register, name='register'),
     path('send-otp/', views.send_otp, name='send_otp'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
