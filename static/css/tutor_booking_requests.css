@@ -5,12 +5,12 @@
 }
 
 .requests-hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
     color: #fff;
     padding: 1.7rem 1.8rem;
     border-radius: 16px;
     margin-bottom: 1.5rem;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    box-shadow: 0 10px 30px rgba(37,99,235, 0.25);
 }
 
 .requests-title {

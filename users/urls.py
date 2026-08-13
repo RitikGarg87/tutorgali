@@ -88,6 +88,11 @@ urlpatterns = [
     path('subscriptions/', views.subscription_plans, name='subscription_plans'),
     path('subscriptions/<int:plan_id>/pay/', views.create_subscription_payment, name='create_subscription_payment'),
     path('subscriptions/callback/', views.subscription_payment_callback, name='subscription_payment_callback'),
+    # ── Legal / Compliance pages (required for Razorpay activation) ──
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('terms-and-conditions/', views.terms_conditions, name='terms_conditions'),
+    path('refund-policy/', views.refund_policy, name='refund_policy'),
+    path('contact-us/', views.contact_us, name='contact_us'),
 ]
 
 

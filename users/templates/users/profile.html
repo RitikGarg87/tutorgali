@@ -180,7 +180,7 @@
     outline: none;
     border-color: var(--primary);
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(102,126,234,0.10);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
   }
 
   .form-control::placeholder { color: var(--text-muted); }
@@ -242,7 +242,7 @@
     min-height: 50px;
   }
 
-  .save-btn:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(102,126,234,0.38); }
+  .save-btn:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(37,99,235,0.38); }
 
   /* ── Quick Actions ── */
   .quick-actions {
@@ -308,7 +308,13 @@
         {{ profile.full_name|default:user.username }}
       </div>
       <div class="hero-meta">
-        <span><i class="fas fa-user-graduate"></i> Student</span>
+        <span>
+          {% if profile.role == 'tutor' %}
+            <i class="fas fa-chalkboard-teacher"></i> Tutor
+          {% else %}
+            <i class="fas fa-user-graduate"></i> Student
+          {% endif %}
+        </span>
         <span><i class="fas fa-envelope"></i> {{ user.email }}</span>
         {% if profile.mobile_number %}
           <span><i class="fas fa-mobile-alt"></i> {{ profile.mobile_number }}</span>
@@ -441,6 +447,35 @@
     </div>
     <div class="profile-section-body">
       <div class="quick-actions">
+        {% if profile.role == 'tutor' %}
+        <a href="{% if profile.profile_completed %}{% url 'tutor_dashboard' %}{% else %}{% url 'tutor_onboarding' %}{% endif %}" class="quick-action-btn">
+          <div class="quick-action-icon" style="background:var(--gradient-soft); color:var(--primary);">
+            <i class="fas fa-th-large"></i>
+          </div>
+          <div>
+            <div>Dashboard</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">Go to your home</div>
+          </div>
+        </a>
+        <a href="{% url 'tutor_booking_requests' %}" class="quick-action-btn">
+          <div class="quick-action-icon" style="background:#ede9fe; color:#7c3aed;">
+            <i class="fas fa-inbox"></i>
+          </div>
+          <div>
+            <div>Student Requests</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">View booking requests</div>
+          </div>
+        </a>
+        <a href="{% url 'tutor_availability' %}" class="quick-action-btn">
+          <div class="quick-action-icon" style="background:var(--success-bg); color:var(--success);">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div>
+            <div>Availability</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">Manage your time slots</div>
+          </div>
+        </a>
+        {% else %}
         <a href="{% url 'student_dashboard' %}" class="quick-action-btn">
           <div class="quick-action-icon" style="background:var(--gradient-soft); color:var(--primary);">
             <i class="fas fa-th-large"></i>
@@ -468,6 +503,7 @@
             <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">View all requests</div>
           </div>
         </a>
+        {% endif %}
         <a href="{% url 'password_reset' %}" class="quick-action-btn">
           <div class="quick-action-icon" style="background:var(--warning-bg); color:var(--warning);">
             <i class="fas fa-key"></i>

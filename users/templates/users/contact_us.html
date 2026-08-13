@@ -1,0 +1,23 @@
+{% extends 'users/legal_page.html' %}
+
+{% block legal_body %}
+<p>
+  Have a question, need help with your account, or want to report an issue? We're happy
+  to help — reach out to us using the details below.
+</p>
+
+<h2>Support Email</h2>
+<p>
+  <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+</p>
+<p>
+  We aim to respond to all queries within 2–3 business days.
+</p>
+
+<h2>What to Include</h2>
+<ul>
+  <li>Your registered name and email/mobile number</li>
+  <li>Whether you're a student or a tutor</li>
+  <li>A clear description of your query or issue (and payment/order ID, if related to a subscription payment)</li>
+</ul>
+{% endblock %}

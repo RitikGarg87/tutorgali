@@ -8,7 +8,7 @@
   <title>{% block title %}TutorGali{% endblock %}</title>
 
   <!-- Favicon: gradient circle with white "T" — works in all browsers -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23667eea'/%3E%3Cstop offset='100%25' stop-color='%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Arial,sans-serif' font-size='58' font-weight='900' text-anchor='middle' fill='white'%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%231e3a8a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Arial,sans-serif' font-size='58' font-weight='900' text-anchor='middle' fill='white'%3ET%3C/text%3E%3C/svg%3E">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -120,6 +120,22 @@
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  <!-- ── Footer ── -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="site-footer-brand">
+        <i class="fas fa-graduation-cap"></i> TutorGali
+      </span>
+      <nav class="site-footer-links">
+        <a href="{% url 'contact_us' %}">Contact Us</a>
+        <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
+        <a href="{% url 'terms_conditions' %}">Terms &amp; Conditions</a>
+        <a href="{% url 'refund_policy' %}">Refund &amp; Cancellation</a>
+      </nav>
+      <span class="site-footer-copy">&copy; {% now "Y" %} TutorGali. All rights reserved.</span>
+    </div>
+  </footer>
 
   <!-- ── Hamburger JS ── -->
   <script>

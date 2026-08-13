@@ -1,0 +1,42 @@
+{% extends 'users/base.html' %}
+
+{% block title %}{{ page_title }} — TutorGali{% endblock %}
+
+{% block extra_css %}
+<style>
+  .legal-content h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary, #1e293b);
+    margin: 28px 0 10px;
+  }
+  .legal-content h2:first-child { margin-top: 0; }
+  .legal-content p {
+    color: var(--text-secondary, #475569);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .legal-content ul {
+    color: var(--text-secondary, #475569);
+    line-height: 1.7;
+    margin: 0 0 12px 0;
+    padding-left: 22px;
+  }
+  .legal-content li { margin-bottom: 6px; }
+  .legal-content a { color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper-md">
+  <div class="card card-lg">
+    <h1 class="section-heading" style="margin-bottom: 6px;">{{ page_title }}</h1>
+    {% if last_updated %}
+      <p class="text-muted" style="margin-bottom: 24px;">Last updated: {{ last_updated }}</p>
+    {% endif %}
+    <div class="legal-content">
+      {% block legal_body %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

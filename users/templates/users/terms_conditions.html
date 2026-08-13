@@ -1,0 +1,75 @@
+{% extends 'users/legal_page.html' %}
+
+{% block legal_body %}
+<p>
+  These Terms &amp; Conditions ("Terms") govern your use of TutorGali (the "Platform").
+  By registering for or using TutorGali, you agree to these Terms.
+</p>
+
+<h2>1. About TutorGali</h2>
+<p>
+  TutorGali is a platform that connects students seeking tutoring with tutors offering
+  tutoring services. TutorGali is currently operated as an individual/unregistered
+  proprietorship. TutorGali acts only as a platform to facilitate discovery and booking
+  requests between students and tutors, and is not a party to any tutoring arrangement
+  made between them.
+</p>
+
+<h2>2. Eligibility</h2>
+<p>
+  You must provide accurate information when registering, whether as a student or a tutor.
+  Tutors must submit valid qualification and identity documents for verification before
+  their profile is approved and made visible to students.
+</p>
+
+<h2>3. Tutor Verification</h2>
+<p>
+  TutorGali reviews tutor-submitted documents (certificates, ID proof) for approval, but
+  does not guarantee the accuracy of any tutor's claimed qualifications or the quality of
+  tutoring provided. Students are encouraged to verify tutor credentials independently
+  before engaging in paid tutoring arrangements.
+</p>
+
+<h2>4. Booking Requests</h2>
+<p>
+  Booking requests submitted by students are sent to tutors for acceptance or rejection.
+  TutorGali is not responsible for the outcome, scheduling, or conduct of any tutoring
+  session arranged through the Platform.
+</p>
+
+<h2>5. Subscription Plans &amp; Payments</h2>
+<p>
+  Tutors may purchase subscription plans to access certain features on the Platform.
+  Payments are processed securely via Razorpay. Subscription pricing and duration are
+  displayed at the time of purchase. See our
+  <a href="{% url 'refund_policy' %}">Refund &amp; Cancellation Policy</a> for details
+  on refunds.
+</p>
+
+<h2>6. User Conduct</h2>
+<ul>
+  <li>Do not submit false, misleading, or fraudulent information</li>
+  <li>Do not misuse the Platform to harass, spam, or defraud other users</li>
+  <li>Do not attempt to bypass the Platform's verification or payment processes</li>
+</ul>
+
+<h2>7. Limitation of Liability</h2>
+<p>
+  TutorGali is provided on an "as is" basis. We do not guarantee uninterrupted or
+  error-free access to the Platform and are not liable for any indirect, incidental,
+  or consequential damages arising from your use of the Platform or interactions with
+  other users.
+</p>
+
+<h2>8. Changes to These Terms</h2>
+<p>
+  We may update these Terms from time to time. Continued use of TutorGali after changes
+  are posted constitutes acceptance of the updated Terms.
+</p>
+
+<h2>9. Contact Us</h2>
+<p>
+  For questions about these Terms, contact us at
+  <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+</p>
+{% endblock %}

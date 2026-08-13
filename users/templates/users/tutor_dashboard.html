@@ -37,7 +37,7 @@
   .slot-pill {
     display: inline-flex; align-items: center;
     padding: 6px 14px; background: var(--gradient-soft);
-    border: 1px solid rgba(102,126,234,0.25); border-radius: 999px;
+    border: 1px solid rgba(37,99,235,0.25); border-radius: 999px;
     font-size: 0.82rem; font-weight: 600; color: var(--primary);
   }
   .info-row { display: flex; flex-direction: column; gap: 4px; }
@@ -146,7 +146,7 @@
       <div class="stat-value">{{ profile.experience_years|default:"0" }}</div>
       <div class="stat-label">Years Exp.</div>
     </div>
-    <div class="stat-card stat-card-accent" style="--accent-color:{% if profile.free_contacts_remaining > 0 %}#667eea{% else %}#ef4444{% endif %};">
+    <div class="stat-card stat-card-accent" style="--accent-color:{% if profile.free_contacts_remaining > 0 %}#2563eb{% else %}#ef4444{% endif %};">
       <div class="stat-icon" style="background:{% if profile.free_contacts_remaining > 0 %}var(--gradient-soft){% else %}var(--danger-bg){% endif %}; color:{% if profile.free_contacts_remaining > 0 %}var(--primary){% else %}var(--danger){% endif %};">
         <i class="fas fa-gift"></i>
       </div>

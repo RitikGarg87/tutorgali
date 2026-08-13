@@ -58,7 +58,7 @@
     background: var(--bg-input); transition: var(--transition); min-height: 44px;
   }
   .form-group input:focus,
-  .form-group select:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+  .form-group select:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
   .form-group input::placeholder { color: var(--text-muted); }
   .field-error { margin-top: 4px; font-size: 0.78rem; color: var(--danger); display: flex; align-items: center; gap: 4px; }
   .form-hint  { margin-top: 4px; font-size: 0.78rem; color: var(--text-secondary); }
@@ -81,7 +81,7 @@
 
   .otp-section {
     margin-top: 12px; padding: 16px; background: var(--gradient-soft);
-    border: 1.5px solid rgba(102,126,234,0.2); border-radius: var(--radius-sm);
+    border: 1.5px solid rgba(37,99,235,0.2); border-radius: var(--radius-sm);
   }
   .otp-row { display: flex; gap: 8px; align-items: center; }
   .otp-input {
@@ -89,7 +89,7 @@
     font-family: inherit; font-size: 1.1rem; font-weight: 700; letter-spacing: 6px; text-align: center;
     background: #fff; transition: var(--transition); min-height: 44px;
   }
-  .otp-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+  .otp-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
   .btn-verify-otp {
     flex: 0 0 90px; height: 44px; background: var(--success); color: #fff; border: none;
     border-radius: var(--radius-sm); font-family: inherit; font-size: 0.82rem; font-weight: 700;
@@ -113,7 +113,7 @@
     min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px;
     margin-top: 8px;
   }
-  .btn-submit:hover:not(:disabled) { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(102,126,234,0.38); }
+  .btn-submit:hover:not(:disabled) { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(37,99,235,0.38); }
   .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
   .terms-text { text-align: center; margin-top: 14px; font-size: 0.8rem; color: var(--text-secondary); }
@@ -240,7 +240,7 @@
               <div class="form-group" style="flex:1; margin-bottom:0;">
                 {{ form.mobile_number }}
               </div>
-              <!-- OTP temporaily disabled - Button hidden
+              <!-- OTP temporarily disabled — button hidden
               <button type="button" id="sendOtpBtn" onclick="sendOtp()" class="btn-send-otp">
                 <i class="fas fa-sms"></i> Send OTP
               </button>
@@ -249,8 +249,8 @@
             {% if form.mobile_number.errors %}
               <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.mobile_number.errors.0 }}</div>
             {% endif %}
-      
-            <!-- OTP Input Section - disabled
+
+            <!-- OTP Input Section — disabled
             <div id="otpSection" class="otp-section" style="display:none;">
               <div class="otp-row">
                 <input type="text" id="otpInput" maxlength="6" placeholder="6-digit OTP" class="otp-input">
@@ -261,11 +261,12 @@
                 <span id="resendTimer" class="otp-timer"></span>
               </div>
             </div>
+
             <div id="verifiedBadge" class="verified-badge" style="display:none;">
               <i class="fas fa-check-circle" style="color:var(--success);"></i>
               Mobile number verified successfully!
             </div>
-          -->
+            -->
           </div>
 
           <!-- Passwords -->

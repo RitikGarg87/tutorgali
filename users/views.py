@@ -181,18 +181,18 @@ def register(request):
 
         # Gate 1 — OTP must have been verified in this session
         # if not request.session.get('otp_verified'):
-            # messages.error(request, 'Please verify your mobile number with OTP before registering.')
-            # return render(request, 'users/register.html', {'form': form})
+        #     messages.error(request, 'Please verify your mobile number with OTP before registering.')
+        #     return render(request, 'users/register.html', {'form': form})
 
         if form.is_valid():
             # Gate 2 — submitted mobile must match the one that was OTP-verified
             # submitted_mobile = form.cleaned_data.get('mobile_number')
             # if submitted_mobile != request.session.get('otp_mobile'):
-                # form.add_error(
-                #     'mobile_number',
-                #     'Mobile number does not match the verified number. Please re-verify.',
-                # )
-                # return render(request, 'users/register.html', {'form': form})
+            #     form.add_error(
+            #         'mobile_number',
+            #         'Mobile number does not match the verified number. Please re-verify.',
+            #     )
+            #     return render(request, 'users/register.html', {'form': form})
 
             user = form.save()
             # Clear all OTP session keys after successful registration
@@ -327,23 +327,35 @@ def verification(request):
 
 @login_required
 def student_dashboard(request):
-    return render(request, 'users/student_dashboard.html', {'profile': request.user.profile})
+    profile = request.user.profile
+    if profile.role == 'tutor':
+        if not profile.profile_completed:
+            return redirect('tutor_onboarding')
+        return redirect('tutor_dashboard')
+
+    return render(request, 'users/student_dashboard.html', {'profile': profile})
 
 
 @login_required
 def tutor_dashboard(request):
-    grade_rates = TutorGradeRate.objects.filter(profile=request.user.profile)
+    profile = request.user.profile
+    if profile.role != 'tutor':
+        return redirect('student_dashboard')
+    if not profile.profile_completed:
+        return redirect('tutor_onboarding')
+
+    grade_rates = TutorGradeRate.objects.filter(profile=profile)
 
     # Get availability (single row, Mon-Sat only)
     try:
-        availability = request.user.profile.availability
+        availability = profile.availability
         total_hours = availability.get_total_hours()  # slots * 6 days
     except TutorAvailability.DoesNotExist:
         total_hours = 0
         availability = None
 
     return render(request, 'users/tutor_dashboard.html', {
-        'profile': request.user.profile,
+        'profile': profile,
         'grade_rates': grade_rates,
         'hours_per_week': total_hours,
         'total_slots': total_hours,
@@ -1248,6 +1260,34 @@ def delete_review(request, tutor_id):
             messages.error(request, "No review found to delete.")
 
     return redirect('tutor_public_profile', tutor_id=tutor_id)
+
+
+# ═══════════════════════════════════════════════════════════
+#  LEGAL / COMPLIANCE PAGES  —  required for Razorpay activation
+# ═══════════════════════════════════════════════════════════
+
+LEGAL_PAGE_UPDATED = "12 August 2026"
+SUPPORT_EMAIL = "tutorgalisupport@gmail.com"
+
+def _legal_page(request, template_name, page_title):
+    """Render a static legal/compliance page (Privacy Policy, Terms, etc.)."""
+    return render(request, template_name, {
+        'page_title': page_title,
+        'last_updated': LEGAL_PAGE_UPDATED,
+        'support_email': SUPPORT_EMAIL,
+    })
+
+def privacy_policy(request):
+    return _legal_page(request, 'users/privacy_policy.html', 'Privacy Policy')
+
+def terms_conditions(request):
+    return _legal_page(request, 'users/terms_conditions.html', 'Terms & Conditions')
+
+def refund_policy(request):
+    return _legal_page(request, 'users/refund_policy.html', 'Refund & Cancellation Policy')
+
+def contact_us(request):
+    return _legal_page(request, 'users/contact_us.html', 'Contact Us')
 
 
 # ═══════════════════════════════════════════════════════════
