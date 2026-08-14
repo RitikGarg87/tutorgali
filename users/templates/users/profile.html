@@ -395,7 +395,8 @@
       </div>
     </div>
 
-    <!-- ── Location ── -->
+    <!-- ── Location (students only — tutors manage address via Edit Profile) ── -->
+    {% if profile.role != 'tutor' %}
     <div class="profile-section">
       <div class="profile-section-header">
         <i class="fas fa-map-marker-alt"></i> Location Details
@@ -433,6 +434,27 @@
         </div>
       </div>
     </div>
+    {% else %}
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <i class="fas fa-map-marker-alt"></i> Location Details
+      </div>
+      <div class="profile-section-body">
+        <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:12px;">
+          Your address is managed separately from your teaching profile.
+        </p>
+        <a href="{% url 'tutor_edit_profile' %}" class="quick-action-btn" style="display:inline-flex;">
+          <div class="quick-action-icon" style="background:var(--gradient-soft); color:var(--primary);">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <div>
+            <div>Edit Address</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">Update via Edit Profile</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    {% endif %}
 
     <!-- ── Save Button ── -->
     <button type="submit" class="save-btn">

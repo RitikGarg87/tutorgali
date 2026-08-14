@@ -110,6 +110,12 @@ a:hover { color: var(--primary-dark); }
   font-size: 1.5rem;
 }
 
+.navbar-brand-logo {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
 .navbar-links {
   display: flex;
   align-items: center;
@@ -945,6 +951,7 @@ select.form-control { cursor: pointer; }
   gap: 8px;
 }
 .site-footer-brand i { color: var(--primary); }
+.site-footer-logo { width: 22px; height: 22px; flex-shrink: 0; }
 .site-footer-links {
   display: flex;
   flex-wrap: wrap;

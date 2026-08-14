@@ -7,8 +7,8 @@
   <meta name="description" content="TutorGali — Connect with the best tutors near you">
   <title>{% block title %}TutorGali{% endblock %}</title>
 
-  <!-- Favicon: gradient circle with white "T" — works in all browsers -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%231e3a8a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Arial,sans-serif' font-size='58' font-weight='900' text-anchor='middle' fill='white'%3ET%3C/text%3E%3C/svg%3E">
+  <!-- Favicon: TutorGali logo badge -->
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/logo.svg' %}">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,7 +29,7 @@
 
       <!-- Brand -->
       <a href="{% if user.is_authenticated %}{% if user.profile.role == 'student' %}{% url 'student_dashboard' %}{% else %}{% url 'tutor_dashboard' %}{% endif %}{% else %}/{% endif %}" class="navbar-brand">
-        <i class="fas fa-graduation-cap"></i>
+        <img src="{% static 'images/logo.svg' %}" alt="TutorGali" class="navbar-brand-logo">
         TutorGali
       </a>
 
@@ -125,7 +125,7 @@
   <footer class="site-footer">
     <div class="site-footer-inner">
       <span class="site-footer-brand">
-        <i class="fas fa-graduation-cap"></i> TutorGali
+        <img src="{% static 'images/logo.svg' %}" alt="TutorGali" class="site-footer-logo"> TutorGali
       </span>
       <nav class="site-footer-links">
         <a href="{% url 'contact_us' %}">Contact Us</a>

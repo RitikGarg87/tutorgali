@@ -1,4 +1,5 @@
 {% extends 'users/base.html' %}
+{% load static %}
 {% block title %}Sign Up — TutorGali{% endblock %}
 
 {% block extra_css %}
@@ -139,7 +140,7 @@
 
   <!-- Left: Brand Panel -->
   <div class="auth-brand">
-    <div class="auth-brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="auth-brand-icon"><img src="{% static 'images/logo.svg' %}" alt="TutorGali" style="width:60%; height:60%;"></div>
     <h2>Join TutorGali Today</h2>
     <p>Create your free account and start your learning journey.</p>
     <div class="auth-brand-steps">
