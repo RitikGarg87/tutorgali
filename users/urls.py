@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from django.urls import path, reverse_lazy
 
 urlpatterns = [
-    path('', views.CustomLoginView.as_view(), name='login'),
+    path('', views.home, name='home'),
     path('register/', views.register, name='register'),
     path('send-otp/', views.send_otp, name='send_otp'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
@@ -50,7 +50,7 @@ urlpatterns = [
     path('tutor-availability/', views.tutor_availability, name='tutor_availability'),
     path('browse-tutors/', views.browse_tutors, name='browse_tutors'),
     path('search-tutors/', views.search_tutors, name='search_tutors'),
-        # 🔹 Booking / Contact URLs (NEW)
+    path('find_tutors/', views.public_search_tutors, name='public_search_tutors'), 
     path(
         'tutors/<int:tutor_id>/request/',
         views.create_booking_request,

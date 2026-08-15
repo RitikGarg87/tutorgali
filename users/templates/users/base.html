@@ -4,8 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="TutorGali — Connect with the best tutors near you">
+
+  <meta name="description" content="{% block meta_description %}TutorGali helps students find verified and experienced tutors near them.{% endblock %}">
+
+  <meta name="keywords" content="{% block meta_keywords %}home tutors, private tutors, tutors near me, online tutors, TutorGali{% endblock %}">
+
   <title>{% block title %}TutorGali{% endblock %}</title>
+
+  {% block canonical %}
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  {% endblock %}
+
+  <meta property="og:title" content="{% block og_title %}TutorGali - Find Verified Tutors Near You{% endblock %}">
+
+  <meta property="og:description" content="{% block og_description %}Find verified and experienced tutors near you with TutorGali.{% endblock %}">
+
+  <meta property="og:type" content="website">
+
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
 
   <!-- Favicon: TutorGali logo badge -->
   <link rel="icon" type="image/svg+xml" href="{% static 'images/logo.svg' %}">

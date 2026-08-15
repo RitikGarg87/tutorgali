@@ -57,6 +57,129 @@ class CustomLoginView(auth_views.LoginView):
         else:
             return reverse_lazy('login')
 
+def home(request):
+    return render(request, 'users/home.html')
+
+def _filter_tutors_with_distance(request):
+    """
+    Shared tutor search/filter logic used by both the logged-in student
+    search (search_tutors) and the public homepage search (public_search_tutors).
+    Returns (tutors_with_distance, filters_dict) - does NOT attach any
+    per-user data (booking_status / my_review) - callers add that themselves
+    if a logged-in student profile is available.
+    """
+    grade = request.GET.get('grade')
+    subject = (request.GET.get('subject') or '').strip().lower()
+    mode = request.GET.get('mode')
+    distance_km = float(request.GET.get('distance_km') or 5)
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+    time_slot_pref = request.GET.get('time_slot')
+
+    tutors = Profile.objects.filter(
+        role='tutor',
+        profile_completed=True,
+        verification_status='approved',
+    ).select_related('user').prefetch_related('grade_rates', 'availability')
+
+    # Grade + Subject must match the SAME grade_rates row (not separate rows)
+    if grade and subject:
+        tutors = tutors.filter(
+            grade_rates__grade=grade,
+            grade_rates__subjects__icontains=subject
+        )
+    elif grade:
+        tutors = tutors.filter(grade_rates__grade=grade)
+    elif subject:
+        tutors = tutors.filter(grade_rates__subjects__icontains=subject)
+
+    if mode:
+        tutors = tutors.filter(teaching_mode__icontains=mode)
+
+    tutors = tutors.distinct()
+
+    user_lat = user_lng = None
+    if lat and lng:
+        try:
+            user_lat = float(lat)
+            user_lng = float(lng)
+        except ValueError:
+            user_lat = user_lng = None
+
+    tutors_with_distance = []
+    for tutor in tutors:
+        if tutor.latitude is not None and tutor.longitude is not None and user_lat is not None:
+            dist = haversine_km(user_lat, user_lng, tutor.latitude, tutor.longitude)
+        else:
+            dist = None
+
+        # availability filter (exact 1-hour slot)
+        availability = getattr(tutor, 'availability', None)
+        if not slot_in_preference(
+            getattr(availability, 'time_slots', []),
+            time_slot_pref
+        ):
+            continue
+
+        if dist is None or dist <= distance_km:
+            tutors_with_distance.append((tutor, dist))
+
+    tutors_with_distance.sort(
+        key=lambda x: float('inf') if x[1] is None else x[1]
+    )
+
+    filters = {
+        'grade': grade,
+        'subject': subject,
+        'mode': mode,
+        'distance_km': int(distance_km),
+        'time_slot': time_slot_pref,
+        'user_lat': user_lat,
+        'user_lng': user_lng,
+    }
+
+    return tutors_with_distance, filters
+
+def public_search_tutors(request):
+    """
+    Public tutor search - no login required. Anyone can see results.
+    Does not attach booking_status / my_review - the template shows a "Sign Up to Contact" CTA instead
+    of the real booking form for anonymous visitors.
+
+    Requires at least one filter (grade/subject/mode) before running the
+    query - prevents anonymous visitors from listing every tutor in the database.
+    """
+    has_filter = bool(
+        (request.GET.get('grade') or '').strip()
+        or (request.GET.get('subject') or '').strip()
+        or (request.GET.get('mode') or '').strip()
+    )
+
+    if not has_filter:
+        context = {
+            'results': None,
+            'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
+            'grade': '',
+            'subject': '',
+            'mode': '',
+            'distance_km': 5,
+        }
+        return render(request, 'users/public_tutor_results.html', context)
+
+    tutors_with_distance, filters = _filter_tutors_with_distance(request)
+
+    paginator = Paginator(tutors_with_distance, 20)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'results': page_obj,
+        'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
+        **filters,
+    }
+
+    return render(request, 'users/public_tutor_results.html', context)
+
+
 
 @require_POST
 def send_otp(request):
@@ -572,93 +695,39 @@ def search_tutors(request):
     if request.user.profile.role != 'student':
         return redirect('tutor_dashboard')
 
-    grade = request.GET.get('grade')
-    subject = (request.GET.get('subject') or '').strip().lower()
-    mode = request.GET.get('mode')
-    distance_km = float(request.GET.get('distance_km') or 5)
-    lat = request.GET.get('lat')
-    lng = request.GET.get('lng')
-    time_slot_pref = request.GET.get('time_slot')
+    tutors_with_distance, filters = _filter_tutors_with_distance(request)
+    tutor_profiles = [t for t, _ in tutors_with_distance]
 
-    tutors = Profile.objects.filter(
-        role='tutor',
-        profile_completed=True,
-        verification_status='approved',
-    ).select_related('user').prefetch_related('grade_rates', 'availability')
-
-    # Grade + Subject must match the SAME grade_rates row (not separate rows)
-    if grade and subject:
-        tutors = tutors.filter(
-            grade_rates__grade=grade,
-            grade_rates__subjects__icontains=subject
-        )
-    elif grade:
-        tutors = tutors.filter(grade_rates__grade=grade)
-    elif subject:
-        tutors = tutors.filter(grade_rates__subjects__icontains=subject)
-
-    if mode:
-        tutors = tutors.filter(teaching_mode__icontains=mode)
-
-    tutors = tutors.distinct()
-
-    user_lat = user_lng = None
-    if lat and lng:
-        try:
-            user_lat = float(lat)
-            user_lng = float(lng)
-        except ValueError:
-            user_lat = user_lng = None
-
-    tutors_with_distance = []
-    for tutor in tutors:
-        # distance
-        if tutor.latitude is not None and tutor.longitude is not None and user_lat is not None:
-            dist = haversine_km(user_lat, user_lng, tutor.latitude, tutor.longitude)
-        else:
-            dist = None
-
-        # availability filter (exact 1-hour slot)
-        availability = getattr(tutor, 'availability', None)
-        if not slot_in_preference(getattr(availability, 'time_slots', []), time_slot_pref):
-            continue
-
-        if dist is None or dist <= distance_km:
-            tutors_with_distance.append((tutor, dist))
-
-    # yahan LOOP ke baad list banao (pehle andar thi)
-    tutor_profiles = [t for (t, _) in tutors_with_distance]
-
-    # agar koi tutor nahi mila, to aage ka code safely handle karo
     if tutor_profiles:
         existing_reqs = BookingRequest.objects.filter(
             student=request.user.profile,
             tutor__in=tutor_profiles
         )
-        status_by_tutor = {br.tutor_id: br.status for br in existing_reqs}
+        status_by_tutor = {
+            br.tutor_id: br.status for br in existing_reqs
+        }
     else:
         status_by_tutor = {}
 
-    # har tutor object me booking_status attribute laga do
     for tutor, dist in tutors_with_distance:
         tutor.booking_status = status_by_tutor.get(tutor.id)
 
     # Attach student's existing review for each tutor (if any)
     student_profile = request.user.profile
-    if student_profile.role == 'student' and tutor_profiles:
+    if tutor_profiles:
         reviews_by_tutor = {
             r.tutor_id: r
             for r in TutorReview.objects.filter(
-                student=student_profile, tutor__in=tutor_profiles
+                student=student_profile,
+                tutor__in=tutor_profiles
             )
         }
+
         for tutor, dist in tutors_with_distance:
             tutor.my_review = reviews_by_tutor.get(tutor.id)
     else:
         for tutor, dist in tutors_with_distance:
             tutor.my_review = None
-
-    tutors_with_distance.sort(key=lambda x: float('inf') if x[1] is None else x[1])
 
     paginator = Paginator(tutors_with_distance, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -667,15 +736,10 @@ def search_tutors(request):
         'profile': request.user.profile,
         'results': page_obj,
         'page_obj': page_obj,
-        'grade': grade,
-        'subject': subject,
-        'mode': mode,
-        'distance_km': int(distance_km),
-        'time_slot': time_slot_pref,
-        'user_lat': user_lat,
-        'user_lng': user_lng,
         'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
+        **filters,
     }
+
     return render(request, 'users/tutor_list.html', context)
 
 
