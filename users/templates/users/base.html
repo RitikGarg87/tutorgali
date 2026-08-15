@@ -4,14 +4,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="TutorGali — Connect with the best tutors near you">
-  <title>{% block title %}TutorGali{% endblock %}</title>
 
-  <!-- Favicon: TutorGali logo badge -->
+  <!-- Primary SEO -->
+  <meta name="description"
+        content="{% block meta_description %}TutorGali is an online platform that helps students find and connect with tutors near them for personalized learning and academic support.{% endblock %}">
+
+  <meta name="robots" content="index, follow">
+
+  <title>{% block title %}TutorGali | Find Tutors Near You{% endblock %}</title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://tutorgali.in{{ request.path }}">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="TutorGali">
+  <meta property="og:title"
+        content="{% block og_title %}TutorGali | Find Tutors Near You{% endblock %}">
+  <meta property="og:description"
+        content="{% block og_description %}Find and connect with tutors near you through TutorGali.{% endblock %}">
+  <meta property="og:url" content="https://tutorgali.in{{ request.path }}">
+
+  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="{% static 'images/logo.svg' %}">
 
+  <!-- Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "TutorGali",
+    "url": "https://tutorgali.in/",
+    "logo": "https://tutorgali.in/static/images/logo.svg",
+    "description": "TutorGali is an online platform that helps students find and connect with tutors near them for personalized learning and academic support."
+  }
+  </script>
+
+  <!-- Website Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TutorGali",
+    "url": "https://tutorgali.in/",
+    "description": "TutorGali helps students discover and connect with tutors near them."
+  }
+  </script>
+
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Main Design System -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
