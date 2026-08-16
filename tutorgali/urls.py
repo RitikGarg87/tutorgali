@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.contrib.sitemaps.views import sitemap
 from .sitemaps import StaticViewSitemap
 from django.http import HttpResponse
+from users.views import razorpay_webhook
 
 sitemaps = {
     "static": StaticViewSitemap,
@@ -18,6 +19,7 @@ def robots_txt(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('webhooks/razorpay/',razorpay_webhook,name='razorpay_webhook'),
     path(
     "sitemap.xml",
     sitemap,
