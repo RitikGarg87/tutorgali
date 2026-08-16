@@ -31,6 +31,9 @@ import hashlib
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone as tz
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_razorpay_client():
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -1204,6 +1207,7 @@ def razorpay_webhook(request):
         return JsonResponse({"status": "ok"})
 
     except Exception:
+        logger.exception("Razorpay webhook processing failed")
         return JsonResponse({"status": "error"}, status=500)
 
 # ─────────────────────────────────────────────
