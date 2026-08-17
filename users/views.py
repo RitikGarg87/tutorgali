@@ -14,7 +14,7 @@ from .forms import (
     EmailOrMobileLoginForm, TutorOnboardingForm, TutorGradeRateForm,
     TutorReviewForm, CITIES_BY_STATE,
 )
-from .models import TutorGradeRate, TutorAvailability, Profile, BookingRequest, SubscriptionPlan, TutorSubscription, SubscriptionPayment, TutorReview
+from .models import TutorGradeRate, TutorAvailability, Profile, BookingRequest, SubscriptionPlan, TutorSubscription, SubscriptionPayment, TutorReview, RazorpayWebhookEvent
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -22,18 +22,18 @@ from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.db import transaction
 import razorpay
 import json
+import logging
 import random
 import requests
-import hmac
-import hashlib
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from django.utils import timezone as tz
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 def get_razorpay_client():
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -61,129 +61,6 @@ class CustomLoginView(auth_views.LoginView):
             return reverse_lazy('tutor_dashboard')
         else:
             return reverse_lazy('login')
-
-def home(request):
-    return render(request, 'users/home.html')
-
-def _filter_tutors_with_distance(request):
-    """
-    Shared tutor search/filter logic used by both the logged-in student
-    search (search_tutors) and the public homepage search (public_search_tutors).
-    Returns (tutors_with_distance, filters_dict) - does NOT attach any
-    per-user data (booking_status / my_review) - callers add that themselves
-    if a logged-in student profile is available.
-    """
-    grade = request.GET.get('grade')
-    subject = (request.GET.get('subject') or '').strip().lower()
-    mode = request.GET.get('mode')
-    distance_km = float(request.GET.get('distance_km') or 5)
-    lat = request.GET.get('lat')
-    lng = request.GET.get('lng')
-    time_slot_pref = request.GET.get('time_slot')
-
-    tutors = Profile.objects.filter(
-        role='tutor',
-        profile_completed=True,
-        verification_status='approved',
-    ).select_related('user').prefetch_related('grade_rates', 'availability')
-
-    # Grade + Subject must match the SAME grade_rates row (not separate rows)
-    if grade and subject:
-        tutors = tutors.filter(
-            grade_rates__grade=grade,
-            grade_rates__subjects__icontains=subject
-        )
-    elif grade:
-        tutors = tutors.filter(grade_rates__grade=grade)
-    elif subject:
-        tutors = tutors.filter(grade_rates__subjects__icontains=subject)
-
-    if mode:
-        tutors = tutors.filter(teaching_mode__icontains=mode)
-
-    tutors = tutors.distinct()
-
-    user_lat = user_lng = None
-    if lat and lng:
-        try:
-            user_lat = float(lat)
-            user_lng = float(lng)
-        except ValueError:
-            user_lat = user_lng = None
-
-    tutors_with_distance = []
-    for tutor in tutors:
-        if tutor.latitude is not None and tutor.longitude is not None and user_lat is not None:
-            dist = haversine_km(user_lat, user_lng, tutor.latitude, tutor.longitude)
-        else:
-            dist = None
-
-        # availability filter (exact 1-hour slot)
-        availability = getattr(tutor, 'availability', None)
-        if not slot_in_preference(
-            getattr(availability, 'time_slots', []),
-            time_slot_pref
-        ):
-            continue
-
-        if dist is None or dist <= distance_km:
-            tutors_with_distance.append((tutor, dist))
-
-    tutors_with_distance.sort(
-        key=lambda x: float('inf') if x[1] is None else x[1]
-    )
-
-    filters = {
-        'grade': grade,
-        'subject': subject,
-        'mode': mode,
-        'distance_km': int(distance_km),
-        'time_slot': time_slot_pref,
-        'user_lat': user_lat,
-        'user_lng': user_lng,
-    }
-
-    return tutors_with_distance, filters
-
-def public_search_tutors(request):
-    """
-    Public tutor search - no login required. Anyone can see results.
-    Does not attach booking_status / my_review - the template shows a "Sign Up to Contact" CTA instead
-    of the real booking form for anonymous visitors.
-
-    Requires at least one filter (grade/subject/mode) before running the
-    query - prevents anonymous visitors from listing every tutor in the database.
-    """
-    has_filter = bool(
-        (request.GET.get('grade') or '').strip()
-        or (request.GET.get('subject') or '').strip()
-        or (request.GET.get('mode') or '').strip()
-    )
-
-    if not has_filter:
-        context = {
-            'results': None,
-            'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
-            'grade': '',
-            'subject': '',
-            'mode': '',
-            'distance_km': 5,
-        }
-        return render(request, 'users/public_tutor_results.html', context)
-
-    tutors_with_distance, filters = _filter_tutors_with_distance(request)
-
-    paginator = Paginator(tutors_with_distance, 20)
-    page_obj = paginator.get_page(request.GET.get('page'))
-
-    context = {
-        'results': page_obj,
-        'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
-        **filters,
-    }
-
-    return render(request, 'users/public_tutor_results.html', context)
-
 
 
 @require_POST
@@ -685,6 +562,167 @@ def slot_in_preference(time_slots, pref):
     return pref in (time_slots or [])
 
 
+def home(request):
+    """Public marketing homepage. Shown to everyone, logged in or not."""
+    return render(request, 'users/home.html')
+
+
+def _base_tutor_queryset():
+    """
+    Base queryset for any public/logged-in tutor listing: approved, completed
+    tutor profiles only, with the grade/rate rows every tutor card renders.
+    Shared by the distance-based search filter and the SEO city landing
+    pages so the "who counts as a listed tutor" rule lives in exactly one
+    place.
+    """
+    # order_by('id'): Profile has no default ordering — without this,
+    # Paginator (used by the SEO landing pages) can return inconsistent /
+    # duplicate results across page requests.
+    return Profile.objects.filter(
+        role='tutor',
+        profile_completed=True,
+        verification_status='approved',
+    ).select_related('user').prefetch_related('grade_rates').order_by('id')
+
+
+def filter_tutors(city, subject=None, board=None, grade=None):
+    """
+    Tutors located in `city` (case-insensitive exact match), optionally
+    narrowed to exactly one of subject / exam board / grade. Used by the SEO
+    city, subject+city, board+city, and grade+city landing pages. Returns a
+    distinct queryset (no distance calculation — these pages are
+    location-anchored by city, not by the visitor's coordinates).
+    """
+    tutors = _base_tutor_queryset().filter(city__iexact=city)
+    if subject:
+        tutors = tutors.filter(grade_rates__subjects__icontains=subject)
+    if board:
+        # school_boards is stored comma-separated, same convention as
+        # teaching_mode — see Profile.school_boards in models.py.
+        tutors = tutors.filter(school_boards__icontains=board)
+    if grade:
+        tutors = tutors.filter(grade_rates__grade=grade)
+    return tutors.distinct()
+
+
+def _filter_tutors_with_distance(request):
+    """
+    Shared tutor search/filter logic used by both the logged-in student
+    search (search_tutors) and the public homepage search (public_search_tutors).
+    Returns (tutors_with_distance, filters_dict) — does NOT attach any
+    per-user data (booking_status / my_review); callers add that themselves
+    if a logged-in student profile is available.
+    """
+    grade = request.GET.get('grade')
+    subject = (request.GET.get('subject') or '').strip().lower()
+    mode = request.GET.get('mode')
+    distance_km = float(request.GET.get('distance_km') or 5)
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+    time_slot_pref = request.GET.get('time_slot')
+
+    # availability is only needed for this distance/time-slot search path,
+    # not the SEO city landing pages — prefetched here rather than in
+    # _base_tutor_queryset() to avoid an unused prefetch on those pages.
+    tutors = _base_tutor_queryset().prefetch_related('availability')
+
+    # Grade + Subject must match the SAME grade_rates row (not separate rows)
+    if grade and subject:
+        tutors = tutors.filter(
+            grade_rates__grade=grade,
+            grade_rates__subjects__icontains=subject
+        )
+    elif grade:
+        tutors = tutors.filter(grade_rates__grade=grade)
+    elif subject:
+        tutors = tutors.filter(grade_rates__subjects__icontains=subject)
+
+    if mode:
+        tutors = tutors.filter(teaching_mode__icontains=mode)
+
+    tutors = tutors.distinct()
+
+    user_lat = user_lng = None
+    if lat and lng:
+        try:
+            user_lat = float(lat)
+            user_lng = float(lng)
+        except ValueError:
+            user_lat = user_lng = None
+
+    tutors_with_distance = []
+    for tutor in tutors:
+        if tutor.latitude is not None and tutor.longitude is not None and user_lat is not None:
+            dist = haversine_km(user_lat, user_lng, tutor.latitude, tutor.longitude)
+        else:
+            dist = None
+
+        # availability filter (exact 1-hour slot)
+        availability = getattr(tutor, 'availability', None)
+        if not slot_in_preference(getattr(availability, 'time_slots', []), time_slot_pref):
+            continue
+
+        if dist is None or dist <= distance_km:
+            tutors_with_distance.append((tutor, dist))
+
+    tutors_with_distance.sort(key=lambda x: float('inf') if x[1] is None else x[1])
+
+    filters = {
+        'grade': grade,
+        'subject': subject,
+        'mode': mode,
+        'distance_km': int(distance_km),
+        'time_slot': time_slot_pref,
+        'user_lat': user_lat,
+        'user_lng': user_lng,
+    }
+    return tutors_with_distance, filters
+
+
+def public_search_tutors(request):
+    """
+    Public tutor search — no login required. Anyone can see results.
+    Does not attach booking_status / my_review (those need a logged-in
+    student profile); the template shows a "Sign Up to Contact" CTA instead
+    of the real booking form for anonymous visitors.
+
+    Requires at least one filter (grade/subject/mode) before running the
+    query — prevents anonymously listing every tutor in the database.
+    """
+    has_filter = bool(
+        (request.GET.get('grade') or '').strip()
+        or (request.GET.get('subject') or '').strip()
+        or (request.GET.get('mode') or '').strip()
+    )
+
+    # Canonical URL is the bare page path (no query string) for every filter
+    # combination — avoids duplicate-content signals from the many possible
+    # grade/subject/mode/page query param permutations of this same view.
+    canonical_url = request.build_absolute_uri(request.path)
+
+    if not has_filter:
+        context = {
+            'results': None,
+            'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
+            'grade': '', 'subject': '', 'mode': '', 'distance_km': 5,
+            'canonical_url': canonical_url,
+        }
+        return render(request, 'users/public_tutor_results.html', context)
+
+    tutors_with_distance, filters = _filter_tutors_with_distance(request)
+
+    paginator = Paginator(tutors_with_distance, 20)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'results': page_obj,
+        'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
+        'canonical_url': canonical_url,
+        **filters,
+    }
+    return render(request, 'users/public_tutor_results.html', context)
+
+
 @login_required
 def browse_tutors(request):
     if request.user.profile.role != 'student':
@@ -701,16 +739,14 @@ def search_tutors(request):
         return redirect('tutor_dashboard')
 
     tutors_with_distance, filters = _filter_tutors_with_distance(request)
-    tutor_profiles = [t for t, _ in tutors_with_distance]
+    tutor_profiles = [t for (t, _) in tutors_with_distance]
 
     if tutor_profiles:
         existing_reqs = BookingRequest.objects.filter(
             student=request.user.profile,
             tutor__in=tutor_profiles
         )
-        status_by_tutor = {
-            br.tutor_id: br.status for br in existing_reqs
-        }
+        status_by_tutor = {br.tutor_id: br.status for br in existing_reqs}
     else:
         status_by_tutor = {}
 
@@ -723,11 +759,9 @@ def search_tutors(request):
         reviews_by_tutor = {
             r.tutor_id: r
             for r in TutorReview.objects.filter(
-                student=student_profile,
-                tutor__in=tutor_profiles
+                student=student_profile, tutor__in=tutor_profiles
             )
         }
-
         for tutor, dist in tutors_with_distance:
             tutor.my_review = reviews_by_tutor.get(tutor.id)
     else:
@@ -744,7 +778,6 @@ def search_tutors(request):
         'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
         **filters,
     }
-
     return render(request, 'users/tutor_list.html', context)
 
 
@@ -1085,6 +1118,43 @@ def create_subscription_payment(request, plan_id):
     }
     return render(request, "payments/subscription_checkout.html", context)
 
+def _activate_subscription_payment(payment, razorpay_payment_id, razorpay_signature=None):
+    """
+    Marks a SubscriptionPayment as paid and creates the corresponding
+    TutorSubscription. Shared by the browser-side callback
+    (subscription_payment_callback) and the server-to-server webhook
+    (razorpay_webhook) so both paths activate a subscription identically —
+    whichever one runs first "wins" and the other is a safe no-op.
+
+    Caller is responsible for locking the row (select_for_update) inside a
+    transaction if there's a real chance of the callback and the webhook
+    racing each other (see razorpay_webhook).
+
+    Returns True if a new subscription was activated, False if this payment
+    was already marked paid (idempotent no-op — e.g. webhook arriving after
+    the callback already handled it, or a Razorpay webhook retry).
+    """
+    if payment.status == "paid":
+        return False
+
+    payment.razorpay_payment_id = razorpay_payment_id
+    if razorpay_signature is not None:
+        payment.razorpay_signature = razorpay_signature
+    payment.status = "paid"
+    payment.save()
+
+    today = timezone.now().date()
+    end_date = today + timedelta(days=30 * payment.plan.duration_months)  # approx month
+
+    TutorSubscription.objects.create(
+        tutor=payment.tutor,
+        plan=payment.plan,
+        start_date=today,
+        end_date=end_date,
+    )
+    return True
+
+
 @csrf_exempt
 def subscription_payment_callback(request):
     if request.method != "POST":
@@ -1121,94 +1191,128 @@ def subscription_payment_callback(request):
         messages.error(request, "Payment verification failed.")
         return redirect('subscription_plans')
 
-    try:
-        payment = SubscriptionPayment.objects.select_related('plan', 'tutor').get(
-            razorpay_order_id=razorpay_order_id
-        )
-    except SubscriptionPayment.DoesNotExist:
-        messages.error(request, "Payment record not found.")
-        return redirect('subscription_plans')
+    with transaction.atomic():
+        try:
+            payment = SubscriptionPayment.objects.select_for_update().select_related('plan', 'tutor').get(
+                razorpay_order_id=razorpay_order_id
+            )
+        except SubscriptionPayment.DoesNotExist:
+            messages.error(request, "Payment record not found.")
+            return redirect('subscription_plans')
 
-    payment.razorpay_payment_id = razorpay_payment_id
-    payment.razorpay_signature = razorpay_signature
-    payment.status = "paid"
-    payment.save()
-
-    tutor = payment.tutor
-    plan = payment.plan
-
-    today = timezone.now().date()
-    months = plan.duration_months
-    end_date = today + timedelta(days=30 * months)  # approx month; simple approach
-
-    TutorSubscription.objects.create(
-        tutor=tutor,
-        plan=plan,
-        start_date=today,
-        end_date=end_date,
-    )
+        _activate_subscription_payment(payment, razorpay_payment_id, razorpay_signature)
 
     messages.success(request, "Subscription activated successfully!")
     return redirect('tutor_booking_requests')
 
+
 @csrf_exempt
+@require_POST
 def razorpay_webhook(request):
-    if request.method != "POST":
-        return JsonResponse({"status": "method_not_allowed"}, status=405)
+    """
+    Server-to-server Razorpay webhook — the reliable backstop for
+    subscription_payment_callback. The browser callback above activates a
+    subscription immediately in the common case, but it depends on the
+    tutor's browser successfully posting back after checkout; if that never
+    happens (closed tab, lost connection, redirect failure) Razorpay has
+    still captured the payment and this webhook is the only thing that will
+    ever activate the subscription.
 
-    webhook_secret = settings.RAZORPAY_WEBHOOK_SECRET
-    received_signature = request.headers.get("X-Razorpay-Signature", "")
+    No Django session/CSRF token is available here — Razorpay calls this
+    URL directly, authenticated only by the HMAC signature in the
+    X-Razorpay-Signature header, verified against RAZORPAY_WEBHOOK_SECRET
+    (configured separately from the webhook URL in the Razorpay dashboard).
+    """
+    signature = request.headers.get('X-Razorpay-Signature', '')
+    body = request.body  # raw bytes — signature is computed over the exact body
 
-    expected_signature = hmac.new(
-        webhook_secret.encode("utf-8"),
-        request.body,
-        hashlib.sha256
-    ).hexdigest()
+    if not settings.RAZORPAY_WEBHOOK_SECRET:
+        logger.error("Razorpay webhook received but RAZORPAY_WEBHOOK_SECRET is not configured.")
+        return HttpResponse(status=500)
 
-    if not hmac.compare_digest(received_signature, expected_signature):
-        return JsonResponse({"status": "invalid_signature"}, status=400)
+    client = get_razorpay_client()
+    try:
+        client.utility.verify_webhook_signature(
+            body.decode('utf-8'), signature, settings.RAZORPAY_WEBHOOK_SECRET
+        )
+    except razorpay.errors.SignatureVerificationError:
+        logger.warning("Razorpay webhook signature verification failed.")
+        # Don't persist unverified payloads — anyone can POST here without
+        # the secret, and we only want a durable record of genuine events.
+        return HttpResponseBadRequest("Invalid signature")
 
     try:
-        payload = json.loads(request.body)
-        event = payload.get("event")
+        data = json.loads(body)
+    except ValueError:
+        logger.warning("Razorpay webhook: unparseable JSON body.")
+        return HttpResponseBadRequest("Invalid JSON")
 
-        if event == "payment.captured":
-            payment_entity = payload["payload"]["payment"]["entity"]
+    event_type = data.get('event', '')
+    event_id = request.headers.get('X-Razorpay-Event-Id') or data.get('id') or ''
+    if not event_id:
+        # Extremely unlikely (Razorpay always sends this), but without an
+        # id we can't guarantee idempotency, so refuse rather than risk
+        # double-processing on a retry.
+        logger.warning("Razorpay webhook missing event id; event_type=%s", event_type)
+        return HttpResponseBadRequest("Missing event id")
 
-            razorpay_payment_id = payment_entity["id"]
-            razorpay_order_id = payment_entity.get("order_id")
+    with transaction.atomic():
+        event, created = RazorpayWebhookEvent.objects.select_for_update().get_or_create(
+            event_id=event_id,
+            defaults={'event_type': event_type, 'payload': data},
+        )
+        if not created:
+            # Razorpay retries webhooks on non-2xx/timeout — this exact
+            # event was already received (and, if processed=True below,
+            # already handled), so just acknowledge it again.
+            return HttpResponse(status=200)
 
-            if razorpay_order_id:
-                payment = SubscriptionPayment.objects.filter(
-                    razorpay_order_id=razorpay_order_id
-                ).first()
+        note = _process_razorpay_webhook_event(event_type, data)
+        event.processed = True
+        event.processing_note = note
+        event.save(update_fields=['processed', 'processing_note'])
 
-                if payment and payment.status != "paid":
-                    payment.razorpay_payment_id = razorpay_payment_id
-                    payment.status = "paid"
-                    payment.save()
+    return HttpResponse(status=200)
 
-        elif event == "payment.failed":
-            payment_entity = payload["payload"]["payment"]["entity"]
 
-            razorpay_payment_id = payment_entity["id"]
-            razorpay_order_id = payment_entity.get("order_id")
+def _process_razorpay_webhook_event(event_type, data):
+    """
+    Handles one verified, not-yet-processed Razorpay webhook event.
+    Returns a short human-readable outcome for RazorpayWebhookEvent.processing_note.
+    Always returns normally (never raises) for event types we don't act on —
+    an HTTP 200 tells Razorpay "received", not "acted on".
+    """
+    if event_type == 'payment.captured':
+        entity = data.get('payload', {}).get('payment', {}).get('entity', {})
+        order_id = entity.get('order_id')
+        payment_id = entity.get('id')
+        try:
+            payment = SubscriptionPayment.objects.select_for_update().select_related(
+                'plan', 'tutor'
+            ).get(razorpay_order_id=order_id)
+        except SubscriptionPayment.DoesNotExist:
+            logger.warning("Razorpay webhook payment.captured: no SubscriptionPayment for order_id=%s", order_id)
+            return f"payment.captured: no matching SubscriptionPayment for order {order_id}"
 
-            if razorpay_order_id:
-                payment = SubscriptionPayment.objects.filter(
-                    razorpay_order_id=razorpay_order_id
-                ).first()
+        activated = _activate_subscription_payment(payment, payment_id)
+        return (
+            f"activated subscription for payment #{payment.id}" if activated
+            else f"payment #{payment.id} already marked paid — no-op"
+        )
 
-                if payment and payment.status != "paid":
-                    payment.razorpay_payment_id = razorpay_payment_id
-                    payment.status = "failed"
-                    payment.save()
+    if event_type == 'payment.failed':
+        entity = data.get('payload', {}).get('payment', {}).get('entity', {})
+        order_id = entity.get('order_id')
+        updated = SubscriptionPayment.objects.filter(
+            razorpay_order_id=order_id
+        ).exclude(status='paid').update(status='failed')
+        return (
+            f"marked payment failed for order {order_id}" if updated
+            else f"payment.failed: no matching non-paid SubscriptionPayment for order {order_id}"
+        )
 
-        return JsonResponse({"status": "ok"})
+    return f"ignored — no handler for event type '{event_type}'"
 
-    except Exception:
-        logger.exception("Razorpay webhook processing failed")
-        return JsonResponse({"status": "error"}, status=500)
 
 # ─────────────────────────────────────────────
 # Tutor: My Reviews page
@@ -1332,6 +1436,7 @@ def tutor_public_profile(request, tutor_id):
         'search_subject':   search_subject,
         'search_time_slot': search_time_slot,
         'search_mode':      search_mode,
+        'canonical_url':    request.build_absolute_uri(request.path),
     })
 
 

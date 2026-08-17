@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views
-from . import views
+from . import views, seo_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, reverse_lazy
@@ -50,7 +50,13 @@ urlpatterns = [
     path('tutor-availability/', views.tutor_availability, name='tutor_availability'),
     path('browse-tutors/', views.browse_tutors, name='browse_tutors'),
     path('search-tutors/', views.search_tutors, name='search_tutors'),
-    path('find_tutors/', views.public_search_tutors, name='public_search_tutors'), 
+    path('find-tutors/', views.public_search_tutors, name='public_search_tutors'),
+    # ── SEO landing pages (programmatic city / subject / board / grade pages) ──
+    path('home-tuition-in-<slug:city_slug>/', seo_views.seo_city_landing, name='seo_city_landing'),
+    path('<slug:facet_slug>-tuition-in-<slug:city_slug>/', seo_views.seo_facet_city_landing, name='seo_facet_city_landing'),
+    path('class-<slug:grade_slug>-tutor-in-<slug:city_slug>/', seo_views.seo_grade_city_landing, name='seo_grade_city_landing'),
+    path('robots.txt', seo_views.seo_robots_txt, name='seo_robots_txt'),
+        # 🔹 Booking / Contact URLs (NEW)
     path(
         'tutors/<int:tutor_id>/request/',
         views.create_booking_request,
@@ -88,6 +94,7 @@ urlpatterns = [
     path('subscriptions/', views.subscription_plans, name='subscription_plans'),
     path('subscriptions/<int:plan_id>/pay/', views.create_subscription_payment, name='create_subscription_payment'),
     path('subscriptions/callback/', views.subscription_payment_callback, name='subscription_payment_callback'),
+    path('subscriptions/webhook/', views.razorpay_webhook, name='razorpay_webhook'),
     # ── Legal / Compliance pages (required for Razorpay activation) ──
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-and-conditions/', views.terms_conditions, name='terms_conditions'),

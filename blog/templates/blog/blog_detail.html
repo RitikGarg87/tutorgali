@@ -1,0 +1,86 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block canonical_url %}{{ canonical_url }}{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+{% block og_image %}{% if post.featured_image %}{{ SITE_URL }}{{ post.featured_image.url }}{% else %}{{ SITE_URL }}{% static 'images/logo.svg' %}{% endif %}{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ post.title|escapejs }}",
+  "description": "{{ meta_description|escapejs }}",
+  "datePublished": "{{ post.published_at|date:'c' }}",
+  "dateModified": "{{ post.updated_at|date:'c' }}",
+  "author": {"@type": "Person", "name": "{{ post.author.get_full_name|default:post.author.username|escapejs }}"},
+  "publisher": {"@type": "Organization", "name": "TutorGali"},
+  "mainEntityOfPage": "{{ canonical_url }}"
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .blog-detail { max-width: 760px; margin: 0 auto; padding: 40px 24px 64px; }
+  .blog-detail-category { font-size: 0.78rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .blog-detail h1 { font-size: 1.9rem; font-weight: 800; color: var(--text-primary); margin: 10px 0 8px; line-height: 1.3; }
+  .blog-detail-meta { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px; }
+  .blog-detail-img { width: 100%; border-radius: var(--radius-md); margin-bottom: 24px; }
+  .blog-detail-body { font-size: 1rem; color: var(--text-primary); line-height: 1.8; }
+  .blog-detail-body h2 { font-size: 1.3rem; font-weight: 800; margin: 28px 0 12px; }
+  .blog-detail-body h3 { font-size: 1.1rem; font-weight: 700; margin: 22px 0 10px; }
+  .blog-detail-body p { margin: 0 0 16px; }
+  .blog-detail-body ul, .blog-detail-body ol { margin: 0 0 16px; padding-left: 22px; }
+
+  .blog-related-cta {
+    margin-top: 32px; padding: 20px; background: var(--gradient-soft); border: 1px solid rgba(37,99,235,0.2);
+    border-radius: var(--radius-md); text-align: center;
+  }
+  .blog-related-cta a {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 20px;
+    background: var(--gradient); color: #fff; border-radius: var(--radius-sm); font-weight: 700;
+    font-size: 0.9rem; text-decoration: none;
+  }
+
+  .blog-more { margin-top: 40px; }
+  .blog-more h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; }
+  .blog-more-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="blog-detail">
+  <span class="blog-detail-category">{{ post.get_category_display }}</span>
+  <h1>{{ post.title }}</h1>
+  <div class="blog-detail-meta">By {{ post.author.get_full_name|default:post.author.username }} &middot; {{ post.published_at|date:"d M Y" }}</div>
+
+  {% if post.featured_image %}
+    <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="blog-detail-img" width="760" height="380">
+  {% endif %}
+
+  <div class="blog-detail-body">{{ post.body|safe }}</div>
+
+  {% if related_landing_url %}
+    <div class="blog-related-cta">
+      <div>Looking for {{ related_landing_label }}?</div>
+      <a href="{{ related_landing_url }}"><i class="fas fa-search"></i> Find Tutors</a>
+    </div>
+  {% endif %}
+
+  {% if related_posts %}
+    <div class="blog-more">
+      <h2>More Articles</h2>
+      <div class="blog-more-grid">
+        {% for rp in related_posts %}
+          {% include 'blog/_post_card.html' with post=rp %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</article>
+{% endblock %}

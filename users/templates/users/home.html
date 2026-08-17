@@ -1,18 +1,12 @@
 {% extends 'users/base.html' %}
-{% block title %}TutorGali – Find Verified Tutors Near You{% endblock %}
+{% block title %}TutorGali — Find Verified Tutors Near You | Home Tuition{% endblock %}
+{% block meta_description %}Find verified tutors near you for home tuition and online classes. Search by subject, grade, and location — compare rates and connect with tutors in minutes.{% endblock %}
+{% block canonical_url %}{{ SITE_URL }}/{% endblock %}
+{% block og_title %}TutorGali — Find Verified Tutors Near You{% endblock %}
+{% block og_description %}Find verified tutors near you for home tuition and online classes. Compare rates, read reviews, and connect in minutes.{% endblock %}
 
-{% block meta_description %}
-Find verified and experienced home tutors near you with TutorGali. Search tutors by subject, class and location and connect with the right tutor for your learning needs.
-{% endblock %}
-
-{% block meta_keywords %}
-home tutors, tutors near me, private tutors, home tuition, maths tutor, science tutor, English tutor, online tutor, TutorGali
-{% endblock %}
-
-{% block og_title %}TutorGali – Find Verified Tutors Near You{% endblock %}
-
-{% block og_description %}
-Find verified and experienced home tutors near you with TutorGali. Search tutors by subject, class and location and connect with the right tutor.
+{% block extra_head %}
+{% include 'users/_jsonld_localbusiness.html' %}
 {% endblock %}
 
 {% block extra_css %}
@@ -87,7 +81,7 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
   .home-cta .btn-outline { border-color: rgba(255,255,255,0.6); color: #fff; }
   .home-cta .btn-outline:hover { background: #fff; color: var(--primary); }
 
-  /* — For Tutors panel — */
+  /* ── For Tutors panel ── */
   .tutor-cta-panel {
     background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm); padding: 40px; display: grid;
@@ -101,21 +95,18 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
   .tutor-cta-copy h2 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; line-height: 1.3; }
   .tutor-cta-copy p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.6; }
   .tutor-cta-list { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-  .tutor-cta-list li { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-primary); }
-  .tutor-cta-list li i { color: var(--success); margin-top: 2px; }
+  .tutor-cta-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 0.9rem; color: var(--text-primary); }
+  .tutor-cta-list i { color: var(--success); margin-top: 2px; }
   .tutor-cta-steps { display: flex; flex-direction: column; gap: 16px; }
   .tutor-cta-step {
-    display: flex; align-items: center; gap: 12px; padding: 16px;
-    background: var(--gradient-soft);
+    display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--gradient-soft);
     border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; color: var(--text-primary);
   }
   .tutor-cta-step-num {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: var(--gradient); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.85rem; flex-shrink: 0.85rem;
+    width: 30px; height: 30px; border-radius: 50%; background: var(--gradient); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;
+    flex-shrink: 0;
   }
-
 
   @media (max-width: 768px) {
     .hero { padding: 44px 18px; }
@@ -128,11 +119,11 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
 
 {% block content %}
 
-<!-- — Hero — -->
+<!-- ── Hero ── -->
 <section class="hero">
   <div class="hero-inner">
     <h1>Find the Right Tutor, Right Near You</h1>
-    <p>TutorGali connects students with verified, experienced tutors for every subject and grade – search, compare, and connect in minutes.</p>
+    <p>TutorGali connects students with verified, experienced tutors for every subject and grade — search, compare, and connect in minutes.</p>
 
     <form class="hero-search" method="get" action="{% url 'public_search_tutors' %}">
       <select name="grade">
@@ -152,7 +143,7 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
   </div>
 </section>
 
-<!-- — Stats — -->
+<!-- ── Stats ── -->
 <div class="home-section" style="padding-bottom:8px;">
   <div class="stats-grid">
     <div class="stat-card">
@@ -173,7 +164,7 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
   </div>
 </div>
 
-<!-- — How It Works — -->
+<!-- ── How It Works ── -->
 <div class="home-section">
   <h2 class="home-section-title">How TutorGali Works</h2>
   <p class="home-section-subtitle">Three simple steps to start learning with the right tutor.</p>
@@ -185,7 +176,7 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
     </div>
     <div class="step-card">
       <div class="step-card-num">2</div>
-      <h3>Compare &amp; Connect</h3>
+      <h3>Sign Up &amp; Connect</h3>
       <p>Create a free account to send a request and view a tutor's full contact details.</p>
     </div>
     <div class="step-card">
@@ -196,18 +187,20 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
   </div>
 </div>
 
-<!-- — Features — -->
+<!-- ── Features ── -->
 <div class="home-section" style="padding-top:0;">
+  <h2 class="home-section-title">Why Choose TutorGali</h2>
+  <p class="home-section-subtitle">Everything you need to find the right tutor, without the hassle.</p>
   <div class="action-grid">
     <div class="action-card">
-      <div class="action-card-icon"><i class="fas fa-shield-alt"></i></div>
-      <h3>Verified Tutors</h3>
-      <p>Every tutor profile is manually reviewed before approval.</p>
+      <div class="action-card-icon"><i class="fas fa-map-marker-alt"></i></div>
+      <h3>Find tutors within your locality</h3>
+      <p>Search by distance and discover tutors closest to you.</p>
     </div>
     <div class="action-card">
-      <div class="action-card-icon"><i class="fas fa-map-marker-alt"></i></div>
-      <h3>Find tutors near you</h3>
-      <p>Search by distance and discover tutors closest to you.</p>
+      <div class="action-card-icon"><i class="fas fa-shield-alt"></i></div>
+      <h3>Verified &amp; background-checked tutors</h3>
+      <p>Every tutor profile is manually reviewed before approval.</p>
     </div>
     <div class="action-card">
       <div class="action-card-icon"><i class="fas fa-rupee-sign"></i></div>
@@ -222,14 +215,14 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
   </div>
 </div>
 
-<!-- — For Tutors — -->
+<!-- ── For Tutors ── -->
 {% if not user.is_authenticated %}
 <div class="home-section" style="padding-top:0;">
   <div class="tutor-cta-panel">
     <div class="tutor-cta-copy">
       <span class="tutor-cta-badge"><i class="fas fa-chalkboard-teacher"></i> For Tutors</span>
       <h2>Are You a Tutor? Grow Your Student Base with TutorGali</h2>
-      <p>Create your free tutor profile, get verified, and start receiving booking requests from students in your area – no upfront cost, you set your own rates.</p>
+      <p>Create your free tutor profile, get verified, and start receiving booking requests from students in your area — no upfront cost, you set your own rates.</p>
       <ul class="tutor-cta-list">
         <li><i class="fas fa-check-circle"></i> Reach students actively searching for your subjects</li>
         <li><i class="fas fa-check-circle"></i> Get a verified badge to build trust instantly</li>
@@ -247,7 +240,7 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
 </div>
 {% endif %}
 
-<!-- — Final CTA — -->
+<!-- ── Final CTA ── -->
 <div style="padding-bottom:64px;">
   <div class="home-cta">
     {% if user.is_authenticated %}
@@ -262,7 +255,7 @@ Find verified and experienced home tutors near you with TutorGali. Search tutors
       </div>
     {% else %}
       <h2>Ready to Get Started?</h2>
-      <p>Join TutorGali today – it's free to sign up as a student or a tutor.</p>
+      <p>Join TutorGali today — it's free to sign up as a student or a tutor.</p>
       <div class="home-cta-actions">
         <a href="{% url 'register' %}" class="btn btn-lg" style="background:#fff; color:var(--primary);"><i class="fas fa-user-plus"></i> Sign Up Free</a>
         <a href="{% url 'public_search_tutors' %}" class="btn btn-outline btn-lg"><i class="fas fa-search"></i> Browse Tutors</a>

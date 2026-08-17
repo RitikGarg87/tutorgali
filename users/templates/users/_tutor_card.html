@@ -1,0 +1,67 @@
+{% comment %}
+Reusable public tutor card — used by public_tutor_results.html and the SEO
+city / subject+city landing pages (seo_city_landing.html). Expects:
+  tutor - a Profile instance (role=tutor)
+  grade - optional grade filter value, to narrow which grade_rates rows show
+{% endcomment %}
+<div class="tutor-card">
+  <div class="tutor-card-header">
+    <div class="avatar">{{ tutor.full_name.0|upper }}</div>
+    <div class="name-block">
+      <div class="name-row">
+        <h3 class="tutor-name">{{ tutor.full_name }}</h3>
+        {% if tutor.is_verified %}
+          <span class="badge-verified-pill"><span class="dot"></span> Verified</span>
+        {% endif %}
+      </div>
+      <p class="tutor-location">{{ tutor.city|default:"" }}{% if tutor.state %}, {{ tutor.state }}{% endif %}</p>
+      {% if tutor.avg_rating %}
+        <div style="display:flex; align-items:center; gap:4px; margin-top:3px;">
+          <span style="color:#f59e0b; font-size:0.8rem;">★</span>
+          <span style="font-size:0.78rem; font-weight:700; color:var(--text-primary);">{{ tutor.avg_rating }}</span>
+          <span style="font-size:0.72rem; color:var(--text-secondary);">({{ tutor.review_count }})</span>
+        </div>
+      {% else %}
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">No reviews yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="tutor-card-body">
+    <p class="line"><span class="lab">Experience:</span> <span>{{ tutor.experience_years|default:"N/A" }} yrs</span></p>
+    <p class="line"><span class="lab">Location:</span> <span>{{ tutor.city|default:"Not provided" }}{% if tutor.pincode %} – {{ tutor.pincode }}{% endif %}</span></p>
+    <p class="line"><span class="lab">Education:</span> <span>{{ tutor.qualification|default:"N/A" }}</span></p>
+
+    {% with rates=tutor.grade_rates.all %}
+      {% if rates %}
+        <p class="side-heading">Subjects &amp; Rates</p>
+        <ul class="rates-list">
+          {% for gr in rates %}
+            {% if not grade or gr.grade == grade %}
+              <li>
+                <span class="grade-label">{{ gr.get_grade_display }}:</span>
+                <span class="subjects">{{ gr.subjects|truncatechars:60 }}</span><br>
+                <span class="rate-line">
+                  {% if gr.rate_online %}Online ₹{{ gr.rate_online }}/hr
+                  {% elif gr.rate_student_home %}At Student ₹{{ gr.rate_student_home }}/hr
+                  {% elif gr.rate_my_home %}At Tutor ₹{{ gr.rate_my_home }}/hr
+                  {% else %}Rate not available{% endif %}
+                </span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <div class="tutor-card-footer">
+    {% if tutor.is_verified %}
+      <span class="badge-verified-small">Verified tutor</span>
+    {% endif %}
+    <a href="{% url 'register' %}" class="signup-gate">
+      <i class="fas fa-user-plus"></i> Sign Up to Contact
+    </a>
+    <p class="signup-gate-note">Free to join — takes less than a minute</p>
+  </div>
+</div>

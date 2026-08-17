@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin-panel/
+Disallow: /profile/
+Disallow: /verification/
+Disallow: /student-dashboard/
+Disallow: /tutor-dashboard/
+Disallow: /tutor-onboarding/
+Disallow: /tutor-edit-profile/
+Disallow: /tutor-availability/
+Disallow: /browse-tutors/
+Disallow: /search-tutors/
+Disallow: /student/bookings/
+Disallow: /tutor/requests/
+Disallow: /my-reviews/
+Disallow: /subscriptions/
+Disallow: /password-reset/
+Disallow: /password-reset-done/
+Disallow: /password-reset-confirm/
+Disallow: /password-reset-complete/
+
+Sitemap: {{ SITE_URL }}/sitemap.xml

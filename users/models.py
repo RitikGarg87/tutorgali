@@ -308,3 +308,27 @@ class SubscriptionPayment(models.Model):
 
     def __str__(self):
         return f"Sub payment {self.tutor.user.username} - {self.plan.name} ({self.status})"
+
+
+class RazorpayWebhookEvent(models.Model):
+    """
+    Log of every Razorpay webhook call received at /subscriptions/webhook/.
+
+    Generic (not subscription-specific) so any future Razorpay event type
+    can be logged here without a new model. event_id is Razorpay's own
+    X-Razorpay-Event-Id header value and is the idempotency key — Razorpay
+    retries webhooks on non-2xx/timeout, so the same event can arrive more
+    than once and must not be reprocessed.
+    """
+    event_id = models.CharField(max_length=100, unique=True)
+    event_type = models.CharField(max_length=100)
+    payload = models.JSONField()
+    processed = models.BooleanField(default=False)
+    processing_note = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.event_type} ({self.event_id})"

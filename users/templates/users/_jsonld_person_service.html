@@ -1,0 +1,26 @@
+{% comment %}
+Service/Person structured data for a tutor's public profile page.
+Expects: tutor (Profile instance), canonical_url, SITE_URL.
+{% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Home Tuition",
+  "name": "{{ tutor.full_name|escapejs }} — Tutor",
+  "url": "{{ canonical_url }}",
+  "areaServed": "{{ tutor.city|default:'India'|escapejs }}",
+  "provider": {
+    "@type": "Person",
+    "name": "{{ tutor.full_name|escapejs }}"
+    {% if tutor.qualification %}, "jobTitle": "{{ tutor.qualification|escapejs }}"{% endif %}
+  }
+  {% if tutor.avg_rating %},
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ tutor.avg_rating }}",
+    "reviewCount": "{{ tutor.review_count }}"
+  }
+  {% endif %}
+}
+</script>

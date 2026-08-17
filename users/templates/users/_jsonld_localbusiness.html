@@ -1,0 +1,14 @@
+{% load static %}
+{% comment %} Organization/LocalBusiness structured data for the homepage. {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "TutorGali",
+  "url": "{{ SITE_URL }}",
+  "logo": "{{ SITE_URL }}{% static 'images/logo.svg' %}",
+  "description": "TutorGali connects students with verified, background-checked home and online tutors across India.",
+  "areaServed": "IN",
+  "sameAs": []
+}
+</script>

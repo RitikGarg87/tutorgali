@@ -1,0 +1,33 @@
+{% comment %}
+BreadcrumbList + FAQPage structured data for SEO city / subject+city landing
+pages. Expects: breadcrumb_label, faqs (list of {question, answer}),
+canonical_url, SITE_URL (from context processor).
+{% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ SITE_URL }}/"},
+    {"@type": "ListItem", "position": 2, "name": "Find Tutors", "item": "{{ SITE_URL }}{% url 'public_search_tutors' %}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ breadcrumb_label|escapejs }}", "item": "{{ canonical_url }}"}
+  ]
+}
+</script>
+{% if faqs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faqs %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.question|escapejs }}",
+      "acceptedAnswer": {"@type": "Answer", "text": "{{ faq.answer|escapejs }}"}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}

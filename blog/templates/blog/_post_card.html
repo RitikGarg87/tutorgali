@@ -1,0 +1,12 @@
+{% comment %} List-page teaser card for a Post — mirrors users/_tutor_card.html conventions. {% endcomment %}
+<a href="{% url 'blog_detail' post.slug %}" class="blog-post-card">
+  {% if post.featured_image %}
+    <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="blog-post-card-img" loading="lazy" width="400" height="220">
+  {% endif %}
+  <div class="blog-post-card-body">
+    <span class="blog-post-card-category">{{ post.get_category_display }}</span>
+    <h3 class="blog-post-card-title">{{ post.title }}</h3>
+    <p class="blog-post-card-excerpt">{{ post.excerpt }}</p>
+    <span class="blog-post-card-date">{{ post.published_at|date:"d M Y" }}</span>
+  </div>
+</a>

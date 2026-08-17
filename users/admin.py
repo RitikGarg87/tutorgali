@@ -3,7 +3,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
 from .models import Profile, TutorGradeRate, TutorAvailability, \
-BookingRequest, SubscriptionPlan, TutorSubscription, SubscriptionPayment, TutorReview
+BookingRequest, SubscriptionPlan, TutorSubscription, SubscriptionPayment, TutorReview, \
+RazorpayWebhookEvent
 
 
 class ProfileInline(admin.StackedInline):
@@ -178,3 +179,16 @@ class TutorReviewAdmin(admin.ModelAdmin):
             return '—'
         return obj.comment[:60] + ('…' if len(obj.comment) > 60 else '')
     comment_preview.short_description = 'Comment'
+
+
+@admin.register(RazorpayWebhookEvent)
+class RazorpayWebhookEventAdmin(admin.ModelAdmin):
+    list_display = ('event_type', 'event_id', 'processed', 'processing_note', 'created_at')
+    list_filter = ('event_type', 'processed')
+    search_fields = ('event_id', 'event_type', 'processing_note')
+    ordering = ('-created_at',)
+    readonly_fields = ('event_id', 'event_type', 'payload', 'processed', 'processing_note', 'created_at')
+
+    def has_add_permission(self, request):
+        # Records are only ever created by the webhook view, never by staff.
+        return False

@@ -1,0 +1,187 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block canonical_url %}{{ canonical_url }}{% endblock %}
+{% block robots_meta %}{% if is_indexable %}index, follow{% else %}noindex, follow{% endif %}{% endblock %}
+{% block og_title %}{{ title }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .seo-hero {
+    background: var(--gradient); color: #fff; padding: 48px 24px; text-align: center;
+  }
+  .seo-hero-inner { max-width: 820px; margin: 0 auto; }
+  .seo-breadcrumbs { font-size: 0.82rem; opacity: 0.9; margin-bottom: 14px; }
+  .seo-breadcrumbs a { color: #fff; text-decoration: underline; }
+  .seo-hero h1 { font-size: 2rem; font-weight: 800; line-height: 1.25; margin-bottom: 12px; }
+  .seo-hero p { font-size: 1rem; opacity: 0.92; margin: 0; }
+
+  .seo-section { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+  .seo-section-title { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+  .seo-intro { max-width: 800px; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; margin: 0 auto 8px; }
+
+  .seo-empty-state {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm); padding: 48px 32px; text-align: center; max-width: 700px; margin: 0 auto;
+  }
+  .seo-empty-state i { font-size: 2.6rem; color: var(--primary); margin-bottom: 16px; display: block; }
+  .seo-empty-state h3 { font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
+  .seo-empty-state p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 22px; line-height: 1.6; }
+  .seo-empty-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .seo-faq { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+  .seo-faq details {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 14px 18px;
+  }
+  .seo-faq summary { font-weight: 700; color: var(--text-primary); cursor: pointer; font-size: 0.95rem; }
+  .seo-faq p { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 10px 0 0; }
+
+  .seo-nearby { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 900px; margin: 0 auto; }
+  .seo-nearby a {
+    padding: 8px 16px; border-radius: 999px; background: var(--gradient-soft); color: var(--primary);
+    font-size: 0.85rem; font-weight: 700; text-decoration: none; border: 1px solid rgba(37,99,235,0.2);
+  }
+  .seo-nearby a:hover { opacity: 0.85; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% include 'users/_jsonld_breadcrumb_faq.html' %}
+
+<!-- ── Hero ── -->
+<section class="seo-hero">
+  <div class="seo-hero-inner">
+    <div class="seo-breadcrumbs">
+      <a href="{% url 'home' %}">Home</a> &rsaquo;
+      <a href="{% url 'public_search_tutors' %}">Find Tutors</a> &rsaquo;
+      <span>{{ breadcrumb_label }}</span>
+    </div>
+    <h1>{{ page_h1 }}</h1>
+    <p>
+      {% if subject %}
+        Compare verified {{ subject }} tutors in {{ city }} offering online, at-home, and in-person tuition.
+      {% elif board_label %}
+        Compare verified {{ board_label }} tutors in {{ city }} offering online, at-home, and in-person tuition.
+      {% elif grade_label %}
+        Compare verified tutors for {{ grade_label }} in {{ city }} offering online, at-home, and in-person tuition.
+      {% else %}
+        Compare verified home tutors in {{ city }} for every subject and grade — search, compare rates, and connect in minutes.
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<!-- ── Intro / listings ── -->
+<div class="seo-section">
+  <div class="seo-intro">
+    {% if subject %}
+      <p>
+        Searching for <strong>{{ subject }} home tuition in {{ city }}</strong>? TutorGali connects you with
+        verified, background-checked {{ subject }} tutors offering flexible online and in-person classes across
+        {{ city }}. Every tutor profile lists experience, qualifications, teaching mode, and transparent hourly rates.
+      </p>
+    {% elif board_label %}
+      <p>
+        Searching for a <strong>{{ board_label }} tutor in {{ city }}</strong>? TutorGali connects you with
+        verified tutors experienced in the {{ board_label }} syllabus, offering flexible online and in-person
+        classes across {{ city }}. Every tutor profile lists experience, qualifications, teaching mode, and
+        transparent hourly rates.
+      </p>
+    {% elif grade_label %}
+      <p>
+        Searching for a <strong>tutor for {{ grade_label }} in {{ city }}</strong>? TutorGali connects you with
+        verified tutors covering every subject for {{ grade_label }}, offering flexible online and in-person
+        classes across {{ city }}. Every tutor profile lists experience, qualifications, teaching mode, and
+        transparent hourly rates.
+      </p>
+    {% else %}
+      <p>
+        Looking for a <strong>home tutor in {{ city }}</strong>? TutorGali helps students and parents in {{ city }}
+        find verified tutors for every subject and grade — from Nursery to 12th — with flexible online, at-home,
+        and tutor's-home teaching options and transparent hourly rates.
+      </p>
+    {% endif %}
+  </div>
+
+  {% if results %}
+    <h2 class="seo-section-title" style="text-align:center; margin-top:28px;">
+      {{ tutor_count }} Tutor{{ tutor_count|pluralize }} in {{ city }}
+    </h2>
+    <div class="tutor-grid" style="margin-top:20px;">
+      {% for tutor in results %}
+        {% include 'users/_tutor_card.html' with tutor=tutor %}
+      {% endfor %}
+    </div>
+
+    {% if results.has_other_pages %}
+    <div class="pagination-wrap" style="justify-content:center; padding:28px 0 8px;">
+      {% if results.has_previous %}
+        <a href="?page={{ results.previous_page_number }}" class="page-btn">&lsaquo; Prev</a>
+      {% endif %}
+      <span class="page-info">Page {{ results.number }} of {{ results.paginator.num_pages }}</span>
+      {% if results.has_next %}
+        <a href="?page={{ results.next_page_number }}" class="page-btn">Next &rsaquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="seo-empty-state">
+      <i class="fas fa-map-marker-alt"></i>
+      <h3>Be the First Verified Tutor in {{ city }}</h3>
+      <p>
+        Students in {{ city }} are actively searching for
+        {% if subject %}{{ subject }} {% elif board_label %}{{ board_label }} {% elif grade_label %}{{ grade_label }} {% endif %}home tutors on
+        TutorGali. Create a free tutor profile, get verified, and start receiving booking requests from students
+        near you.
+      </p>
+      <div class="seo-empty-actions">
+        <a href="{% url 'register' %}" class="btn btn-primary"><i class="fas fa-chalkboard-teacher"></i> Register as a Tutor</a>
+        <a href="{% url 'public_search_tutors' %}" class="btn btn-secondary"><i class="fas fa-search"></i> Browse All Tutors</a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- ── FAQ ── -->
+<div class="seo-section" style="padding-top:0;">
+  <h2 class="seo-section-title" style="text-align:center;">Frequently Asked Questions</h2>
+  <div class="seo-faq" style="margin-top:20px;">
+    {% for faq in faqs %}
+      <details>
+        <summary>{{ faq.question }}</summary>
+        <p>{{ faq.answer }}</p>
+      </details>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ── Nearby cities ── -->
+{% if nearby_cities %}
+<div class="seo-section" style="padding-top:0; padding-bottom:56px;">
+  <h2 class="seo-section-title" style="text-align:center;">Explore Tuition in Nearby Cities</h2>
+  <div class="seo-nearby" style="margin-top:18px;">
+    {% for nc in nearby_cities %}
+      <a href="{% url 'seo_city_landing' nc.slug %}">Home Tuition in {{ nc.name }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Helpful guides (blog cross-links) ── -->
+{% if related_posts %}
+<div class="seo-section" style="padding-top:0; padding-bottom:56px;">
+  <h2 class="seo-section-title" style="text-align:center;">Helpful Guides</h2>
+  <div class="seo-nearby" style="margin-top:18px;">
+    {% for post in related_posts %}
+      <a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
