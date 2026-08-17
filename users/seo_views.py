@@ -41,7 +41,7 @@ _BASE_FAQS = [
     (
         "How much does home tuition cost {in_city}?",
         "Rates vary by tutor, subject, and teaching mode (online, at your home, "
-        "or at the tutor's home). Each tutor sets their own hourly rate, shown "
+        "or at the tutor's home). Each tutor sets their own monthly rate, shown "
         "upfront on their profile — there are no hidden platform fees.",
     ),
     (

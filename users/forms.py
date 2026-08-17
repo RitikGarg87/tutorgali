@@ -448,19 +448,19 @@ class TutorGradeRateForm(forms.ModelForm):
                 'class': 'form-control'
             }),
             'rate_online': forms.NumberInput(attrs={
-                'placeholder': '₹/hour',
+                'placeholder': '₹/month',
                 'class': 'form-control',
                 'min': '0',
                 'step': '50'
             }),
             'rate_student_home': forms.NumberInput(attrs={
-                'placeholder': '₹/hour',
+                'placeholder': '₹/month',
                 'class': 'form-control',
                 'min': '0',
                 'step': '50'
             }),
             'rate_my_home': forms.NumberInput(attrs={
-                'placeholder': '₹/hour',
+                'placeholder': '₹/month',
                 'class': 'form-control',
                 'min': '0',
                 'step': '50'

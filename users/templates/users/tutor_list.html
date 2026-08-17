@@ -253,9 +253,9 @@
                           <span class="grade-label">{{ gr.get_grade_display }}:</span>
                           <span class="subjects">{{ gr.subjects|truncatechars:60 }}</span><br>
                           <span class="rate-line">
-                            {% if gr.rate_online %}Online ₹{{ gr.rate_online }}/hr
-                            {% elif gr.rate_student_home %}At Student ₹{{ gr.rate_student_home }}/hr
-                            {% elif gr.rate_my_home %}At Tutor ₹{{ gr.rate_my_home }}/hr
+                            {% if gr.rate_online %}Online ₹{{ gr.rate_online }}/month
+                            {% elif gr.rate_student_home %}At Student ₹{{ gr.rate_student_home }}/month
+                            {% elif gr.rate_my_home %}At Tutor ₹{{ gr.rate_my_home }}/month
                             {% else %}Rate not available{% endif %}
                           </span>
                         </li>

@@ -48,7 +48,7 @@
               {% elif b.mode == 'my_home' %}<span class="badge badge-muted">Tutor Home</span>
               {% else %}—{% endif %}
             </td>
-            <td>{% if b.price %}<strong style="color:var(--primary);">₹{{ b.price }}/hr</strong>{% else %}—{% endif %}</td>
+            <td>{% if b.price %}<strong style="color:var(--primary);">₹{{ b.price }}/month</strong>{% else %}—{% endif %}</td>
             <td>
               {% if b.status == 'accepted' %}<span class="badge badge-success">Accepted</span>
               {% elif b.status == 'pending'  %}<span class="badge badge-warning">Pending</span>

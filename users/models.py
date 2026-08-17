@@ -207,7 +207,7 @@ class BookingRequest(models.Model):
 
     message = models.TextField(blank=True, null=True)
 
-    price = models.PositiveIntegerField(blank=True, null=True, help_text="Price in INR per hour")
+    price = models.PositiveIntegerField(blank=True, null=True, help_text="Price in INR per month")
 
     status = models.CharField(
         max_length=20,

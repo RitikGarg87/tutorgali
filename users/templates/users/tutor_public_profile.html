@@ -710,9 +710,9 @@
                 <tr>
                   <td class="grade-label-cell">{{ gr.get_grade_display }}</td>
                   <td class="subjects-cell">{{ gr.subjects }}</td>
-                  <td class="rate-cell">{% if gr.rate_online %}₹{{ gr.rate_online }}/hr{% else %}—{% endif %}</td>
-                  <td class="rate-cell">{% if gr.rate_student_home %}₹{{ gr.rate_student_home }}/hr{% else %}—{% endif %}</td>
-                  <td class="rate-cell">{% if gr.rate_my_home %}₹{{ gr.rate_my_home }}/hr{% else %}—{% endif %}</td>
+                  <td class="rate-cell">{% if gr.rate_online %}₹{{ gr.rate_online }}/month{% else %}—{% endif %}</td>
+                  <td class="rate-cell">{% if gr.rate_student_home %}₹{{ gr.rate_student_home }}/month{% else %}—{% endif %}</td>
+                  <td class="rate-cell">{% if gr.rate_my_home %}₹{{ gr.rate_my_home }}/month{% else %}—{% endif %}</td>
                 </tr>
               {% endfor %}
             </tbody>
