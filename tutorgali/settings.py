@@ -4,15 +4,13 @@ Reads all secrets from .env via python-decouple.
 """
 
 from pathlib import Path
-
 import dj_database_url
 from decouple import config, Csv
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Core ─────────────────────────────────────────────────────────────────────
-SECRET_KEY = config("SECRET_KEY") 
+SECRET_KEY = config("SECRET_KEY")
 DEBUG      = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
@@ -68,14 +66,13 @@ TEMPLATES = [
 
 
 
-# ── Database ──────────────────────────────────────────────────────────────────
-
 DATABASES = {
     "default": dj_database_url.config(
         default=config("DATABASE_URL"),
         conn_max_age=600,
     )
 }
+
 # ── Password Validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -164,17 +161,25 @@ SITE_URL = f"https://{SITE_DOMAIN}"
 MIN_TUTORS_FOR_INDEX = config("MIN_TUTORS_FOR_INDEX", default=3, cast=int)
 
 # ── Production Security Headers ───────────────────────────────────────────────
-# These activate automatically when DEBUG=False
+# These activate automatically when DEBUG=False. The site is now live on
+# HTTPS (tutorgali.in), so the SSL/HSTS-dependent settings below are enabled.
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER   = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS             = "DENY"
-    # Enable these once you have HTTPS/SSL set up:
-    # SECURE_SSL_REDIRECT         = True
-    # SESSION_COOKIE_SECURE       = True
-    # CSRF_COOKIE_SECURE          = True
-    # SECURE_HSTS_SECONDS         = 31536000
-    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    # Redirect all HTTP requests to HTTPS.
+    SECURE_SSL_REDIRECT         = True
+    # Only send session/CSRF cookies over HTTPS.
+    SESSION_COOKIE_SECURE       = True
+    CSRF_COOKIE_SECURE          = True
+    # HSTS: tells browsers to only ever connect via HTTPS for the next year,
+    # including subdomains. Start with a short SECURE_HSTS_SECONDS value in
+    # a test deploy if unsure, then raise it — once submitted to browsers"
+    # HSTS preload lists this is hard to reverse.
+    SECURE_HSTS_SECONDS         = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD         = True
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 LOGGING = {

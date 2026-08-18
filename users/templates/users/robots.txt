@@ -2,6 +2,11 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /admin-panel/
+Disallow: /login/
+Disallow: /logout/
+Disallow: /register/
+Disallow: /send-otp/
+Disallow: /verify-otp/
 Disallow: /profile/
 Disallow: /verification/
 Disallow: /student-dashboard/
@@ -19,5 +24,9 @@ Disallow: /password-reset/
 Disallow: /password-reset-done/
 Disallow: /password-reset-confirm/
 Disallow: /password-reset-complete/
+# Tutor profile pages (/tutors/<id>/) stay crawlable — only the
+# login-required action sub-paths beneath them are blocked.
+Disallow: /tutors/*/request/
+Disallow: /tutors/*/review/
 
 Sitemap: {{ SITE_URL }}/sitemap.xml
