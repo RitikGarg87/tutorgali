@@ -5,19 +5,14 @@ pages.
 Single source of truth for:
   - Which city slugs resolve to a valid landing page (CITY_SLUG_MAP), derived
     from the existing CITIES_BY_STATE dropdown data in users/forms.py.
-  - Which of those cities are "launch ready" for internal linking / sitemap
-    inclusion (SEO_TARGET_CITIES) — a curated pan-India subset, not all ~700
-    cities, to avoid flooding the site with thin/unlinked pages.
+  - A curated pan-India subset of cities (SEO_TARGET_CITIES) used to power
+    "nearby cities" internal-linking suggestions on a city landing page.
   - Which subjects (SUBJECTS) and exam boards (BOARDS) get dedicated
     "<facet> tuition in <city>" pages, and which grades (GRADE_SLUG_MAP) get
     "class <grade> tutor in <city>" pages — each kept as a single facet
     combined with city only (never subject+board+grade together, which would
     produce thousands of mostly-empty pages).
-  - The indexability gate (MIN_TUTORS_FOR_INDEX / is_city_indexable) that
-    keeps low-supply pages out of sitemap.xml and marked noindex until they
-    have earned enough real tutor listings.
 """
-from django.conf import settings
 from django.utils.text import slugify
 
 from .forms import CITIES_BY_STATE
@@ -119,22 +114,10 @@ GRADE_CODE_TO_SLUG: dict[str, str] = {
     code: slug for slug, (code, _label) in GRADE_SLUG_MAP.items()
 }
 
-# ── Indexability gate ────────────────────────────────────────────────────────
-# A city page only gets indexed (added to sitemap.xml, robots="index,follow")
-# once it's both a curated target city AND has enough real tutor listings to
-# not look like thin content. Configurable via .env (settings.MIN_TUTORS_FOR_INDEX)
-# so it can be tuned as the marketplace grows without a code change.
-MIN_TUTORS_FOR_INDEX: int = settings.MIN_TUTORS_FOR_INDEX
-
 # city -> state, used to prefer same-state suggestions in nearby_cities()
 _CITY_TO_STATE: dict[str, str] = {
     city: state for state, cities in CITIES_BY_STATE.items() for city in cities
 }
-
-
-def is_city_indexable(city: str, tutor_count: int) -> bool:
-    """Whether a city (landing or subject+city) page should be indexed."""
-    return city in SEO_TARGET_CITIES and tutor_count >= MIN_TUTORS_FOR_INDEX
 
 
 def nearby_cities(city: str, limit: int = 8) -> list[str]:

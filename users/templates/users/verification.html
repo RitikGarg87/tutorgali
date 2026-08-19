@@ -78,7 +78,7 @@
           {% if profile.education_certificate %}
             <div style="margin-top:8px; display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--success);">
               <i class="fas fa-check-circle"></i>
-              Current file: <a href="{{ profile.education_certificate.url }}" target="_blank" rel="noopener noreferrer" style="color:var(--success); font-weight:600;">View Document</a>
+              Current file: <a href="{{ profile.education_certificate_private_url }}" target="_blank" rel="noopener noreferrer" style="color:var(--success); font-weight:600;">View Document</a>
             </div>
           {% endif %}
           {{ form.education_certificate.errors }}
@@ -98,7 +98,7 @@
           {% if profile.id_proof %}
             <div style="margin-top:8px; display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--success);">
               <i class="fas fa-check-circle"></i>
-              Current file: <a href="{{ profile.id_proof.url }}" target="_blank" rel="noopener noreferrer" style="color:var(--success); font-weight:600;">View Document</a>
+              Current file: <a href="{{ profile.id_proof_private_url }}" target="_blank" rel="noopener noreferrer" style="color:var(--success); font-weight:600;">View Document</a>
             </div>
           {% endif %}
           {{ form.id_proof.errors }}

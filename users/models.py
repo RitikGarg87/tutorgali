@@ -104,6 +104,26 @@ class Profile(models.Model):
     def is_verified(self):
         return self.verification_status == 'approved'
 
+    def _private_media_url(self, field_file):
+        """URL to the access-controlled download view for a verification file
+        (id_proof / education_certificate), or '' if no file. Templates use
+        this instead of ``.url`` so these files are never linked via the
+        public /media/ path."""
+        from django.urls import reverse
+        if not field_file:
+            return ''
+        # Stored name is like 'id_proofs/foo.jpg' — split into (subdir, filename).
+        subdir, _, filename = field_file.name.partition('/')
+        return reverse('serve_private_media', args=[subdir, filename])
+
+    @property
+    def id_proof_private_url(self):
+        return self._private_media_url(self.id_proof)
+
+    @property
+    def education_certificate_private_url(self):
+        return self._private_media_url(self.education_certificate)
+
     @property
     def avg_rating(self):
         from django.db.models import Avg

@@ -102,8 +102,6 @@ def _render_landing(request, city, *, subject=None, board_label=None,
     page_obj = paginator.get_page(request.GET.get('page'))
     tutor_count = paginator.count
 
-    is_indexable = seo_data.is_city_indexable(city, tutor_count)
-
     if subject:
         facet_type, facet_label = 'subject', subject
     elif board_label:
@@ -144,7 +142,7 @@ def _render_landing(request, city, *, subject=None, board_label=None,
             f"{city} are searching for {topic.lower()} right now."
         )
 
-    nearby = seo_data.nearby_cities(city) if is_indexable else []
+    nearby = seo_data.nearby_cities(city)
     nearby_cities = [
         {'name': c, 'slug': seo_data.CITY_TO_SLUG[c]} for c in nearby
     ]
@@ -160,12 +158,17 @@ def _render_landing(request, city, *, subject=None, board_label=None,
         'meta_description': meta_description,
         'results': page_obj,
         'tutor_count': tutor_count,
-        'is_indexable': is_indexable,
         'nearby_cities': nearby_cities,
         'faqs': _faqs_for(city, facet_type, facet_label),
         'related_posts': _related_posts_for(facet_type),
         'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
         'canonical_url': request.build_absolute_uri(request.path),
+        # Thin-content guard: a landing page with no verified tutors is thin
+        # (near-duplicate templated copy + an empty state). Mark it
+        # `noindex, follow` so Google won't index it, but still crawls its
+        # internal links. Once a tutor joins the city/facet, tutor_count > 0
+        # and the page becomes indexable automatically.
+        'noindex': tutor_count == 0,
     }
     return render(request, 'users/seo_city_landing.html', context)
 
@@ -189,7 +192,7 @@ def _related_posts_for(facet_type):
 
 def seo_city_landing(request, city_slug):
     """'Home tuition in <city>' landing page — see users/seo_data.py for the
-    slug -> city mapping and the indexability rules."""
+    slug -> city mapping."""
     city = seo_data.CITY_SLUG_MAP.get(city_slug)
     if not city:
         raise Http404("Unknown city")
@@ -198,10 +201,9 @@ def seo_city_landing(request, city_slug):
 
 def seo_facet_city_landing(request, facet_slug, city_slug):
     """'<subject|board> tuition in <city>' landing page — subject and board
-    share this one URL/view since both use the same URL shape; only
-    generated for the curated SEO_TARGET_CITIES."""
+    share this one URL/view since both use the same URL shape."""
     city = seo_data.CITY_SLUG_MAP.get(city_slug)
-    if not city or city not in seo_data.SEO_TARGET_CITIES:
+    if not city:
         raise Http404("Unknown city")
 
     if facet_slug in seo_data.SUBJECT_SLUG_MAP:
@@ -215,11 +217,10 @@ def seo_facet_city_landing(request, facet_slug, city_slug):
 
 
 def seo_grade_city_landing(request, grade_slug, city_slug):
-    """'Class <grade> tutor in <city>' landing page — only generated for the
-    curated SEO_TARGET_CITIES."""
+    """'Class <grade> tutor in <city>' landing page."""
     city = seo_data.CITY_SLUG_MAP.get(city_slug)
     grade = seo_data.GRADE_SLUG_MAP.get(grade_slug)
-    if not city or not grade or city not in seo_data.SEO_TARGET_CITIES:
+    if not city or not grade:
         raise Http404("Unknown city or grade")
     grade_code, grade_label = grade
     return _render_landing(request, city, grade_label=grade_label, grade_code=grade_code)

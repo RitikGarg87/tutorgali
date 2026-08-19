@@ -15,6 +15,7 @@ from .forms import (
     TutorReviewForm, CITIES_BY_STATE,
 )
 from .models import TutorGradeRate, TutorAvailability, Profile, BookingRequest, SubscriptionPlan, TutorSubscription, SubscriptionPayment, TutorReview, RazorpayWebhookEvent
+from . import seo_data
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -28,7 +29,9 @@ import json
 import logging
 import random
 import requests
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, FileResponse, Http404
+from django.core.files.storage import default_storage
+from django.core.exceptions import SuspiciousFileOperation
 from django.views.decorators.http import require_POST
 from django.utils import timezone as tz
 
@@ -330,6 +333,52 @@ def verification(request):
     return render(request, 'users/verification.html', {'form': form, 'profile': profile})
 
 
+# Only these upload dirs hold private files; everything else under MEDIA_ROOT
+# (e.g. blog/) stays publicly served by nginx.
+_PRIVATE_MEDIA_DIRS = {'id_proofs', 'certificates'}
+
+
+@login_required
+def serve_private_media(request, subdir, filename):
+    """
+    Access-controlled download for tutor verification files (ID proofs,
+    education certificates). Served only to the owning tutor or staff —
+    replaces the public /media/ path for these two dirs.
+
+    Returns 404 (not 403) on permission failure so the endpoint never
+    confirms a file exists to someone not allowed to see it.
+    """
+    # Reject anything outside the allowlisted private dirs and any path
+    # traversal in the filename (the <path:> URL converter can include '/').
+    if subdir not in _PRIVATE_MEDIA_DIRS or '..' in filename or filename.startswith('/'):
+        raise Http404
+
+    rel_path = f'{subdir}/{filename}'
+
+    if not request.user.is_staff:
+        field = 'id_proof' if subdir == 'id_proofs' else 'education_certificate'
+        owns_file = Profile.objects.filter(
+            user=request.user, **{field: rel_path},
+        ).exists()
+        if not owns_file:
+            raise Http404
+
+    try:
+        if not default_storage.exists(rel_path):
+            raise Http404
+        file_handle = default_storage.open(rel_path, 'rb')
+    except SuspiciousFileOperation:
+        # storage.safe_join rejected a path escaping MEDIA_ROOT — treat as 404.
+        raise Http404
+
+    # Force download (never inline-render) + no MIME sniffing: these are
+    # user-uploaded files, so an inline HTML/SVG upload must not execute in
+    # our origin.
+    response = FileResponse(file_handle, as_attachment=True)
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
 @login_required
 def student_dashboard(request):
     profile = request.user.profile
@@ -564,7 +613,12 @@ def slot_in_preference(time_slots, pref):
 
 def home(request):
     """Public marketing homepage. Shown to everyone, logged in or not."""
-    return render(request, 'users/home.html')
+    popular_cities = [
+        {'name': city, 'slug': seo_data.CITY_TO_SLUG[city]}
+        for city in seo_data.SEO_TARGET_CITIES[:15]
+        if city in seo_data.CITY_TO_SLUG  # skip any misspelled target city
+    ]
+    return render(request, 'users/home.html', {'popular_cities': popular_cities})
 
 
 def _base_tutor_queryset():

@@ -51,6 +51,9 @@ urlpatterns = [
     path('browse-tutors/', views.browse_tutors, name='browse_tutors'),
     path('search-tutors/', views.search_tutors, name='search_tutors'),
     path('find-tutors/', views.public_search_tutors, name='public_search_tutors'),
+    # ── Access-controlled downloads for tutor verification files (ID proofs,
+    #    certificates) — replaces the public /media/ path for these dirs. ──
+    path('media/private/<str:subdir>/<path:filename>', views.serve_private_media, name='serve_private_media'),
     # ── SEO landing pages (programmatic city / subject / board / grade pages) ──
     path('home-tuition-in-<slug:city_slug>/', seo_views.seo_city_landing, name='seo_city_landing'),
     path('<slug:facet_slug>-tuition-in-<slug:city_slug>/', seo_views.seo_facet_city_landing, name='seo_facet_city_landing'),
